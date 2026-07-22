@@ -45,15 +45,24 @@ async function main() {
       })
       .returning();
 
-    // Dividend history. The most recent fiscal year is "approved" with a
-    // future-ish ex-date so the calendar page has upcoming entries.
+    // Dividend history. The most recent fiscal year is always scheduled at a
+    // future ex-date (status "approved") so the calendar's upcoming section
+    // is populated no matter when the seed runs.
     const years = Object.keys(fixture.dividends)
       .map(Number)
       .sort((a, b) => a - b);
+    const hash = [...fixture.symbol].reduce((a, c) => a + c.charCodeAt(0), 0);
     for (const year of years) {
       const amount = fixture.dividends[year];
       const isLatest = year === years[years.length - 1];
-      const exDate = exDateFor(year, fixture.symbol);
+      let exDate: string;
+      if (isLatest) {
+        const upcoming = new Date(today);
+        upcoming.setUTCDate(upcoming.getUTCDate() + 7 + (hash % 60));
+        exDate = isoDate(upcoming);
+      } else {
+        exDate = exDateFor(year, fixture.symbol);
+      }
       const payment = new Date(exDate);
       payment.setUTCDate(payment.getUTCDate() + 14);
       await db.insert(dividends).values({
@@ -62,7 +71,7 @@ async function main() {
         amount: String(amount),
         exDate,
         paymentDate: isoDate(payment),
-        status: isLatest && new Date(exDate) > today ? "approved" : "paid",
+        status: isLatest ? "approved" : "paid",
         source: "fixture",
       });
     }
