@@ -1,0 +1,20 @@
+services:
+  db:
+    image: pgvector/pgvector:pg16
+    container_name: brvm-db
+    environment:
+      POSTGRES_USER: brvm
+      POSTGRES_PASSWORD: brvm
+      POSTGRES_DB: brvm
+    ports:
+      - "5432:5432"
+    volumes:
+      - brvm-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U brvm -d brvm"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+volumes:
+  brvm-pgdata:

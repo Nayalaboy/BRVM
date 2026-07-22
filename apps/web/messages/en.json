@@ -1,0 +1,150 @@
+{
+  "common": {
+    "appName": "BRVM Research",
+    "premium": "Premium",
+    "free": "Free",
+    "loading": "Loading…",
+    "seeAll": "See all",
+    "perShare": "per share",
+    "aiDisclaimer": "AI-generated content for information purposes only. This is not investment advice.",
+    "notAdvice": "Information published on this site is provided for informational and educational purposes only and does not constitute personalized investment advice."
+  },
+  "nav": {
+    "dividends": "Dividends",
+    "companies": "Companies",
+    "screener": "Screener",
+    "pricing": "Pricing",
+    "account": "My account",
+    "signIn": "Sign in",
+    "signOut": "Sign out",
+    "openAccount": "Open a brokerage account"
+  },
+  "footer": {
+    "tagline": "The reference equity research service for the BRVM, French-first.",
+    "disclaimer": "BRVM Research is an independent financial information service. We are not a brokerage firm (SGI) and we do not provide personalized investment advice. Data may contain errors or delays.",
+    "terms": "Terms of Service",
+    "privacy": "Privacy Policy",
+    "referralNote": "Partner link — no personal data is shared."
+  },
+  "home": {
+    "heroTitle": "AI-augmented equity research for the BRVM",
+    "heroSubtitle": "Dividend calendar, earnings analysis and a document research copilot covering companies listed on the Bourse Régionale des Valeurs Mobilières.",
+    "ctaCalendar": "View the dividend calendar",
+    "ctaPricing": "Discover Premium",
+    "upcomingDividends": "Upcoming dividends",
+    "featuresTitle": "What you will find here",
+    "featureCalendarTitle": "Dividend calendar",
+    "featureCalendarBody": "Ex-dates, amounts and payout history for every listed company. Free.",
+    "featureCompaniesTitle": "Company pages",
+    "featureCompaniesBody": "Profile, sector, dividend history and yield for every listed stock. Free.",
+    "featureCopilotTitle": "Research copilot (Premium)",
+    "featureCopilotBody": "Ask questions in French or English about annual reports and official releases, get sourced answers with citations.",
+    "featureScreenerTitle": "Screener & forecasts (Premium)",
+    "featureScreenerBody": "Filter the market by yield, payout streak, sector and liquidity. Dividend projections with confidence bands."
+  },
+  "dividends": {
+    "title": "Dividend calendar",
+    "subtitle": "Ex-dates and amounts announced or paid by companies listed on the BRVM.",
+    "upcoming": "Upcoming",
+    "past": "Recent history",
+    "colCompany": "Company",
+    "colFiscalYear": "Fiscal year",
+    "colAmount": "Gross dividend",
+    "colExDate": "Ex-date",
+    "colPaymentDate": "Payment",
+    "colStatus": "Status",
+    "statusProposed": "Proposed",
+    "statusApproved": "Approved",
+    "statusPaid": "Paid",
+    "empty": "No dividends recorded yet."
+  },
+  "companies": {
+    "title": "Listed companies",
+    "subtitle": "All stocks covered by BRVM Research.",
+    "colSymbol": "Ticker",
+    "colName": "Company",
+    "colSector": "Sector",
+    "colCountry": "Country",
+    "colLastClose": "Last close",
+    "colYield": "Yield"
+  },
+  "company": {
+    "lastClose": "Last close",
+    "dividendYield": "Dividend yield",
+    "lastDividend": "Last dividend",
+    "sharesOutstanding": "Shares outstanding",
+    "avgDailyValue": "Avg. daily value traded (30d)",
+    "dividendHistory": "Dividend history",
+    "colFiscalYear": "Fiscal year",
+    "colAmount": "Gross dividend / share",
+    "colExDate": "Ex-date",
+    "colPaymentDate": "Payment",
+    "colStatus": "Status",
+    "colGrowth": "Change",
+    "premiumHistoryTitle": "Full history and payout consistency",
+    "premiumHistoryBody": "Premium subscribers get the full payout history, growth streaks and dividend forecasts.",
+    "notFound": "Company not found."
+  },
+  "screener": {
+    "title": "Screener",
+    "subtitle": "Filter the BRVM market by yield, payout streak, sector and liquidity.",
+    "teaserTitle": "The screener is available to Premium subscribers",
+    "teaserBody": "Filters by yield, payout history, sector, liquidity and performance. Save your screens and get updates.",
+    "comingSoon": "The interactive screener ships in an upcoming update. Your Premium subscription will include it at launch."
+  },
+  "pricing": {
+    "title": "Pricing",
+    "subtitle": "Start for free, upgrade to Premium when you want to go further.",
+    "freeName": "Free",
+    "freePrice": "0 FCFA",
+    "freeFeature1": "Full dividend calendar",
+    "freeFeature2": "Company pages and market data",
+    "freeFeature3": "Weekly newsletter",
+    "premiumName": "Premium",
+    "premiumPrice": "$9 / month",
+    "premiumPriceNote": "≈ 5,500 FCFA / month · VAT may apply depending on your country",
+    "premiumFeature1": "AI research copilot with citations from official documents",
+    "premiumFeature2": "Screener: yield, payout streak, sector, liquidity",
+    "premiumFeature3": "Dividend forecasts with confidence bands",
+    "premiumFeature4": "Earnings summaries in French and English",
+    "premiumFeature5": "Full payout history",
+    "cta": "Upgrade to Premium",
+    "ctaCurrent": "Your current plan",
+    "ctaSignIn": "Sign in to subscribe",
+    "checkoutCancelled": "Checkout cancelled. You can try again anytime.",
+    "billingNote": "Secure payment via Stripe. Cancel anytime from your account."
+  },
+  "account": {
+    "title": "My account",
+    "email": "Email address",
+    "plan": "Subscription",
+    "planFree": "Free",
+    "planPremium": "Premium",
+    "planGraceNote": "Your last payment failed. Your Premium access is kept until {date} — update your payment method to keep it.",
+    "manageBilling": "Manage my subscription",
+    "upgrade": "Upgrade to Premium",
+    "checkoutSuccess": "Your Premium subscription is active. Welcome!",
+    "signOut": "Sign out"
+  },
+  "signIn": {
+    "title": "Sign in",
+    "subtitle": "Access your BRVM Research account.",
+    "google": "Continue with Google",
+    "emailLabel": "Email address",
+    "emailButton": "Send me a sign-in link",
+    "emailSent": "Check your inbox: a sign-in link has been sent.",
+    "devLabel": "Developer sign-in (local environment)",
+    "devButton": "Dev sign-in",
+    "legal": "By signing in you agree to our <terms>Terms of Service</terms> and <privacy>Privacy Policy</privacy>."
+  },
+  "legal": {
+    "termsTitle": "Terms of Service",
+    "privacyTitle": "Privacy Policy",
+    "placeholder": "Draft document — pending review by legal counsel."
+  },
+  "premiumGate": {
+    "badge": "Premium",
+    "cta": "Discover Premium",
+    "signInCta": "Sign in"
+  }
+}
