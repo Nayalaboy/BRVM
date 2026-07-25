@@ -1,0 +1,58 @@
+[project]
+name = "brvm-pipeline"
+version = "0.1.0"
+description = "BRVM investing-intelligence data pipeline: quotes, dividends, corporate actions, documents, and a read-only FastAPI export."
+requires-python = ">=3.12"
+dependencies = [
+    "sqlalchemy>=2.0",
+    "alembic>=1.13",
+    "psycopg[binary]>=3.2",       # postgres (prod); sqlite is stdlib for local
+    "httpx>=0.28",
+    "tenacity>=9.0",              # retry/backoff for collectors
+    "beautifulsoup4>=4.12",
+    "lxml>=5.3",
+    "pypdf>=5.1",                 # BOC PDF page/text extraction
+    "pydantic>=2.9",
+    "pydantic-settings>=2.6",
+    "structlog>=24.4",
+    "python-dateutil>=2.9",
+    "typer>=0.15",
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.32",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.3",
+    "respx>=0.22",               # httpx request mocking in tests
+    "ruff>=0.8",
+    "mypy>=1.13",
+]
+
+[project.scripts]
+brvm-pipeline = "brvm_pipeline.run:app"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/brvm_pipeline"]
+
+[tool.ruff]
+line-length = 110
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+# B008: Depends()/Query()/typer.Option() in defaults is the FastAPI/Typer idiom.
+ignore = ["B008"]
+
+[tool.ruff.lint.per-file-ignores]
+# One company per line keeps the seed dataset diff-friendly and scannable.
+"src/brvm_pipeline/data/companies.py" = ["E501"]
+"src/brvm_pipeline/data/licensed_entities.py" = ["E501"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]

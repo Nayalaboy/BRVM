@@ -1,132 +1,117 @@
-# BRVM Research
+# Aqlee Invest
 
-Recherche actions et données de marché pour la Bourse Régionale des Valeurs
-Mobilières (BRVM), en français d'abord. Calendrier des dividendes et fiches
-sociétés gratuits ; copilote de recherche IA, screener et prévisions de
-dividendes en abonnement Premium.
+Intelligence d'investissement pour la **BRVM** (Bourse Régionale des Valeurs
+Mobilières, la bourse régionale de l'UEMOA — 8 pays d'Afrique de l'Ouest), en
+**français d'abord**. Calendrier des dividendes, fiches sociétés, récap
+quotidien vérifié, centre IPO/marché primaire, vérificateur d'agrément SGI et
+lexique — gratuits.
+
+> **Produit d'information, pas un conseil en investissement.** Chaque page porte
+> un avertissement (FR + EN) : informations à but informatif et éducatif
+> uniquement, aucun conseil personnalisé, les performances passées ne préjugent
+> pas des performances futures. Aucune connexion, aucun paiement en Phase 0.
 
 ## Architecture
 
+Monorepo, deux composants indépendants :
+
 ```
-apps/web            Next.js 16 (App Router) — site public, auth, billing, copilot UI
-packages/db         Schéma Drizzle + migrations + seed (Postgres 16 + pgvector)
-packages/analytics  Événements produit typés (signup, upgrade, cancel, …)
-services/ingestion  Worker Python — ingestion des PDF (BOC, rapports annuels), RAG
+pipeline/   Python 3.12 — collecte (quotes, dividendes, indices, documents),
+            base relationnelle (SQLite local / Postgres prod, SQLAlchemy +
+            Alembic), métriques dérivées, et une API FastAPI read-only.
+web/        Next.js 16 (App Router, next-intl FR/EN) — le site public, qui
+            consomme UNIQUEMENT l'API FastAPI (jamais la base directement).
 ```
 
-Cible d'infrastructure : **Vercel** (web) + **un Postgres managé** (avec
-pgvector) + **un worker** (Railway ou Fly) pour les jobs d'ingestion.
+Le **pipeline possède le schéma** ; le **site lit l'API**. Cible d'hébergement
+< 20 $/mois — voir [`DEPLOYMENT.md`](DEPLOYMENT.md).
 
-### Feuille de route
+## Démarrage local
 
-| Étape | Contenu | Statut |
-|---|---|---|
-| 0 | Monorepo, schéma, calendrier des dividendes, fiches sociétés, i18n FR/EN | ✅ |
-| 1 | Auth (Auth.js) + Stripe (abonnements, entitlements, période de grâce) + gating | ✅ |
-| 2 | Ingestion PDF (OCR, chunking tables) + RAG hybride (pgvector + BM25) | ⏳ |
-| 3 | UI copilote (streaming, citations, garde-fou réglementaire) | ⏳ |
-| 4 | Résumés de résultats automatisés + newsletter (file de relecture) | ⏳ |
-| 5 | Screener + prévisions de dividendes (Premium) | ⏳ |
-| 6 | Admin (santé ingestion, files de revue, métriques MRR) | ⏳ |
-
-## Démarrage local (runbook)
-
-Prérequis : Node ≥ 22, pnpm ≥ 10, Docker (ou un Postgres 16 local avec
-l'extension pgvector).
+Prérequis : Python ≥ 3.12, Node ≥ 22, pnpm ≥ 10. Aucun service externe requis
+(SQLite en local).
 
 ```bash
+# 1) Pipeline : venv + schéma + données réelles (47 sociétés, dividendes)
+make bootstrap
+make daily            # collecte la dernière séance depuis brvm.org (idempotent)
+make api              # API read-only sur http://localhost:8000/docs
+
+# 2) Site (dans un autre terminal)
 pnpm install
-cp .env.example .env          # ajustez si besoin — les valeurs par défaut suffisent en local
-
-# Une commande : démarre Postgres (docker), applique les migrations, insère les fixtures
-pnpm setup:local
-
-# Lance le site
-pnpm dev                      # http://localhost:3000
+pnpm dev              # http://localhost:3000  (lit l'API ci-dessus)
 ```
 
-Sans Docker : pointez `DATABASE_URL` vers votre Postgres puis
-`pnpm db:migrate && pnpm db:seed`.
+## Le site (Phase 0)
 
-### Connexion en local
-
-`AUTH_DEV_LOGIN=true` (défaut du `.env.example`) active un formulaire de
-connexion développeur sans mot de passe sur `/connexion` — n'importe quelle
-adresse e-mail crée un compte. Google et le magic link (Resend) s'activent en
-renseignant leurs clés. **Ne jamais activer `AUTH_DEV_LOGIN` en production**
-(il est de toute façon bloqué sur les déploiements Vercel production).
-
-### Stripe en local
-
-1. Créez un produit « Premium » (9 $/mois) en mode test, copiez le price id
-   dans `STRIPE_PRICE_PREMIUM_MONTHLY`, la clé secrète dans
-   `STRIPE_SECRET_KEY`.
-2. Redirigez les webhooks :
-   `stripe listen --forward-to localhost:3000/api/stripe/webhook`
-   et copiez le secret dans `STRIPE_WEBHOOK_SECRET`.
-3. Checkout de test : carte `4242 4242 4242 4242`. Le webhook alimente les
-   tables `subscriptions` puis `entitlements` ; l'accès Premium se débloque
-   immédiatement.
-
-Sans clés Stripe, vous pouvez simuler l'effet du webhook :
-
-```bash
-cd apps/web
-pnpm exec tsx scripts/simulate-webhook.ts demo@example.com active    # premium
-pnpm exec tsx scripts/simulate-webhook.ts demo@example.com past_due  # période de grâce
-pnpm exec tsx scripts/simulate-webhook.ts demo@example.com canceled  # retour au gratuit
-```
-
-En cas d'échec de paiement (`past_due`), l'accès Premium est conservé
-`BILLING_GRACE_PERIOD_DAYS` jours (7 par défaut). La TVA européenne est gérée
-par Stripe Tax (`automatic_tax` activé au checkout ; désactivable avec
-`STRIPE_AUTOMATIC_TAX=false` tant que Stripe Tax n'est pas configuré sur le
-compte).
-
-### Tests
-
-```bash
-pnpm test        # unitaires (formatage FCFA, logique d'entitlement/grâce)
-pnpm typecheck
-pnpm build
-```
-
-### Worker d'ingestion (squelette — étape 2)
-
-```bash
-pip install -e "services/ingestion[dev]"
-brvm-ingest status     # file d'attente des documents
-```
-
-## Variables d'environnement
-
-Voir [`.env.example`](.env.example). Points notables :
-
-| Variable | Rôle |
+| Route (FR / EN) | Contenu |
 |---|---|
-| `DATABASE_URL` | Postgres 16 + pgvector |
-| `AUTH_SECRET`, `AUTH_GOOGLE_*`, `AUTH_RESEND_KEY` | Auth.js (Google + magic link) |
-| `AUTH_DEV_LOGIN` | Connexion dev sans mot de passe (local uniquement) |
-| `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_PREMIUM_MONTHLY` | Abonnements |
-| `BILLING_GRACE_PERIOD_DAYS` | Durée de grâce après échec de paiement |
-| `NEXT_PUBLIC_SGI_REFERRAL_URL` | Lien de parrainage simple vers une SGI partenaire (aucune donnée transmise) |
-| `ANTHROPIC_API_KEY`, `ANTHROPIC_BUDGET_USD` | Copilote (étape 2+) |
+| `/` | Résumé de marché (BRVM Composite, plus forts mouvements), prochains dividendes, capture e-mail |
+| `/dividendes` · `/en/dividends` | Calendrier trié/filtrable + rendement + **export ICS** (global et par société) |
+| `/societes/[ticker]` · `/en/companies/[ticker]` | Fiche : cours (graphique SVG), stats, historique complet des dividendes |
+| `/verifier` · `/en/verify` | Vérificateur d'agrément SGI (registre officiel) |
+| `/operations` · `/en/ipos` | Centre IPO & marché primaire (conditions en français simple) |
+| `/lexique` · `/en/glossary` | Lexique SEO (FCP, OPCVM, compte-titres, capitalisation vs prix…) |
+| `/recap/[date]` | Récap quotidien vérifié, chaque chiffre traçable au **BOC** |
+| `/newsletter` | Inscription (double opt-in) + archives |
 
-## Conformité
+SEO : `sitemap.xml`, `robots.txt`, métadonnées FR, OpenGraph. Analytics Plausible
+(activable par variable d'env). Capture e-mail via Buttondown ou Resend (double
+opt-in délégué au fournisseur ; stocke locale + profil diaspora/résident/pro).
 
-- Aucun conseil en investissement personnalisé : le service est informationnel
-  et éducatif ; le copilote refusera les demandes de conseil personnalisé
-  (garde-fou système + post-filtre, refus journalisés — étape 3).
-- Bandeau « généré par IA » sur tout contenu automatisé, avec relecture
-  humaine avant publication (étape 4).
-- CGU et politique de confidentialité : textes provisoires dans
-  `/conditions` et `/confidentialite`, à faire relire par un conseil.
-- Pas de courtage, pas de routage d'ordres, pas d'ouverture de compte : le CTA
-  « ouvrir un compte titres » est un simple lien sortant configuré par env.
+## Runbook
+
+**Ajouter une société.** Ajoutez-la à
+`pipeline/src/brvm_pipeline/data/companies.py` (ticker, nom, secteur, pays,
+titres, cours de référence, dividendes) puis `make seed`. Dès qu'elle apparaît
+sur brvm.org, le collecteur quotidien la met à jour automatiquement.
+
+**Ajouter une opération (IPO/APE).** Remplissez le modèle dans
+`pipeline/src/brvm_pipeline/data/operations.py` depuis la note d'information
+officielle (chaque champ vérifié) puis `make registry`.
+
+**Backfill.** `make backfill since=2026-01-01` (brvm.org ne sert que la dernière
+séance ; l'historique OHLCV profond nécessite une source dédiée — suivi).
+
+**Modifier le schéma.** Éditez `pipeline/src/brvm_pipeline/models.py`, puis
+`make revision m="…"` → relisez la migration → `make migrate`.
+
+**Déployer.** Voir [`DEPLOYMENT.md`](DEPLOYMENT.md) (Vercel + Postgres managé +
+API FastAPI + cron GitHub Actions).
+
+## Qualité & vérification
+
+```bash
+make test            # pipeline : parsers testés contre de vraies pages BRVM
+make lint            # ruff
+pnpm typecheck && pnpm build   # site
+```
+
+Le pipeline exécute à chaque run : contrôles qualité (prix négatifs, volumes
+aberrants par z-score, tickers manquants), recalcul des métriques (rendement,
+plus haut/bas 52 sem., YTD, volume moyen 20j), et un récap **publié uniquement
+si les contrôles passent**. Un échec envoie une alerte e-mail.
 
 ## Données
 
-Les fixtures (`packages/db/src/fixtures.ts`) utilisent les vraies sociétés et
-symboles de la cote BRVM mais des **montants illustratifs** pour le
-développement. Le pipeline de production les remplace par les valeurs
-extraites des bulletins officiels de la cote (BOC).
+Sociétés, secteurs, nombre de titres et cours : brvm.org. Dividendes : avis
+officiels « Paiement de dividendes » (net/action, exercice, dates), recoupés
+avec RichBourse/Sikafinance. Registre SGI : CREPMF. Le seed de démarrage utilise
+des données **réelles** (clôture du 2026-07-22) pour que le site soit peuplé
+avant la première collecte.
+
+## Conformité
+
+- Aucun conseil personnalisé ; service informationnel et éducatif.
+- Récap traçable (« Source : BOC du [date] »), jamais publié si un contrôle
+  qualité échoue.
+- Pas de courtage, pas de routage d'ordres : le CTA « ouvrir un compte » est un
+  simple lien sortant.
+- Le vérificateur d'agrément ne conclut jamais « non agréé » sur une absence de
+  résultat ; renvoie toujours vers le CREPMF.
+
+## Phases ultérieures
+
+Ingestion PDF (BOC, rapports) + RAG, copilote de recherche IA avec citations,
+résumés de résultats, prévisions de dividendes, et une offre Premium (le
+squelette Auth.js + Stripe est conservé sur la branche `legacy-premium`).

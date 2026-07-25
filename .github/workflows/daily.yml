@@ -1,0 +1,36 @@
+name: pipeline-daily
+
+on:
+  schedule:
+    # Weekdays 18:30 GMT — after the BRVM session closes.
+    - cron: "30 18 * * 1-5"
+  workflow_dispatch: {}
+
+concurrency:
+  group: pipeline-daily
+  cancel-in-progress: false
+
+jobs:
+  daily:
+    runs-on: ubuntu-latest
+    env:
+      BRVM_DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      BRVM_RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+      BRVM_ALERT_EMAIL_TO: ${{ secrets.ALERT_EMAIL_TO }}
+      # Object storage for BOC PDFs (optional; falls back to local otherwise)
+      BRVM_STORAGE_BACKEND: ${{ vars.STORAGE_BACKEND }}
+      BRVM_S3_BUCKET: ${{ vars.S3_BUCKET }}
+      BRVM_S3_ENDPOINT_URL: ${{ vars.S3_ENDPOINT_URL }}
+      BRVM_S3_ACCESS_KEY_ID: ${{ secrets.S3_ACCESS_KEY_ID }}
+      BRVM_S3_SECRET_ACCESS_KEY: ${{ secrets.S3_SECRET_ACCESS_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install pipeline
+        run: pip install -e "pipeline[dev]"
+      - name: Migrate
+        run: cd pipeline && alembic upgrade head
+      - name: Daily run
+        run: python -m brvm_pipeline.run daily

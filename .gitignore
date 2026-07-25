@@ -23,6 +23,9 @@ __pycache__/
 
 # Data / artifacts (PDFs are fetched or generated locally)
 data/storage/
+pipeline/data/*.sqlite
+pipeline/data/*.sqlite-shm
+pipeline/data/*.sqlite-wal
 !services/ingestion/fixtures/**
 
 # Misc

@@ -1,0 +1,52 @@
+import { getIndices, getMovers } from "@/lib/api";
+import { formatNumber } from "@/lib/format";
+
+export async function MarketTicker() {
+  const [{ indices }, movers] = await Promise.all([getIndices(), getMovers()]);
+  const items = [
+    ...indices.slice(0, 4).map((item) => ({
+      code: item.code.replaceAll("_", " "),
+      value: item.value,
+      change: item.changePct,
+    })),
+    ...movers.mostActive.slice(0, 5).map((item) => ({
+      code: item.ticker,
+      value: item.close,
+      change: item.changePct,
+    })),
+  ];
+  const tapeItems = [...items, ...items];
+  return (
+    <div className="border-b border-zinc-700 bg-black text-white">
+      <div className="mx-auto flex max-w-[1440px]">
+        <div className="z-10 flex shrink-0 items-center gap-2 bg-brand-500 px-3 font-mono text-[10px] font-black uppercase text-black shadow-[8px_0_16px_rgba(0,0,0,0.65)]">
+          <span className="live-pulse" aria-hidden />
+          BRVM LIVE
+        </div>
+        <div
+          className="market-tape min-w-0 flex-1"
+          role="region"
+          aria-label="BRVM live market ticker"
+          tabIndex={0}
+        >
+          <div className="market-tape-track">
+            {tapeItems.map((item, index) => (
+              <div
+                key={`${index < items.length ? "a" : "b"}-${item.code}`}
+                className="flex shrink-0 items-center gap-2 border-r border-zinc-800 px-5 py-2 font-mono text-[11px]"
+                aria-hidden={index >= items.length}
+              >
+                <span className="font-bold text-zinc-300">{item.code}</span>
+                <span>{item.value == null ? "—" : formatNumber(item.value, 2)}</span>
+                <span className={(item.change ?? 0) >= 0 ? "text-emerald-400" : "text-red-400"}>
+                  {item.change == null ? "—" : `${item.change >= 0 ? "+" : ""}${formatNumber(item.change, 2)}%`}
+                  <span className="ml-1" aria-hidden>{(item.change ?? 0) >= 0 ? "▲" : "▼"}</span>
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

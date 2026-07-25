@@ -1,0 +1,138 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+@theme {
+  --color-brand-50: #fff4e8;
+  --color-brand-100: #ffe3c2;
+  --color-brand-200: #ffc982;
+  --color-brand-300: #ffad45;
+  --color-brand-400: #ff941a;
+  --color-brand-500: #f47b00;
+  --color-brand-600: #d76500;
+  --color-brand-700: #aa4c00;
+  --color-brand-800: #783500;
+  --color-brand-900: #451d00;
+
+  --color-accent-50: #eef7ff;
+  --color-accent-100: #d9edff;
+  --color-accent-200: #bce0ff;
+  --color-accent-300: #8acbff;
+  --color-accent-400: #51afff;
+  --color-accent-500: #238eea;
+  --color-accent-600: #126fc7;
+  --color-accent-700: #1259a1;
+  --color-accent-800: #154c85;
+  --color-accent-900: #183f6e;
+
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+  /* Editorial serif for display headings — system stack, no web-font fetch */
+  --font-serif: Georgia, Cambria, "Times New Roman", "Noto Serif", serif;
+}
+
+body {
+  @apply bg-[#f4f3ef] text-slate-950 antialiased;
+}
+
+.font-serif {
+  font-family: var(--font-serif);
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+::selection {
+  background: #f47b00;
+  color: #fff;
+}
+
+:focus-visible {
+  outline: 2px solid #f47b00;
+  outline-offset: 2px;
+}
+
+.terminal-panel {
+  border: 1px solid #c9c7c0;
+  background: #fff;
+  box-shadow: 3px 3px 0 #111;
+}
+
+.terminal-kicker {
+  font-family: var(--font-sans);
+  font-size: 0.6875rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.terminal-rule {
+  border-top: 4px solid #111;
+}
+
+.market-grid {
+  background-image:
+    linear-gradient(to right, rgba(15, 23, 42, 0.045) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(15, 23, 42, 0.045) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+.market-tape {
+  overflow: hidden;
+}
+
+.market-tape-track {
+  display: flex;
+  width: max-content;
+  animation: market-tape-scroll 42s linear infinite;
+  will-change: transform;
+}
+
+.market-tape:hover .market-tape-track,
+.market-tape:focus-within .market-tape-track {
+  animation-play-state: paused;
+}
+
+.live-pulse {
+  position: relative;
+  display: inline-block;
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 999px;
+  background: #111;
+}
+
+.live-pulse::after {
+  position: absolute;
+  inset: -0.2rem;
+  border: 1px solid #111;
+  border-radius: inherit;
+  content: "";
+  animation: live-pulse-ring 1.5s ease-out infinite;
+}
+
+@keyframes market-tape-scroll {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+@keyframes live-pulse-ring {
+  0% { opacity: 0.8; transform: scale(0.6); }
+  100% { opacity: 0; transform: scale(1.5); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+
+  .market-tape {
+    overflow-x: auto;
+  }
+
+  .market-tape-track {
+    animation: none !important;
+  }
+}
