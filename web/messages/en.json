@@ -7,8 +7,29 @@
     "lexicon": "Glossary",
     "screener": "Screener",
     "intelligence": "Intelligence",
+    "decisions": "Public decisions",
     "premiumDemo": "Premium (demo)",
-    "openAccount": "Open a brokerage account"
+    "openAccount": "Open a brokerage account",
+    "signIn": "Sign in",
+    "account": "My account"
+  },
+  "auth": {
+    "eyebrow": "Aqlee account",
+    "title": "Sign in",
+    "body": "Soon you can save your SGI progress, reminders and alerts. All public information remains available without an account.",
+    "email": "Email address",
+    "emailCta": "Email me a sign-in link",
+    "googleCta": "Continue with Google",
+    "sent": "Link sent. Check your inbox.",
+    "error": "The link could not be sent. Please try again.",
+    "verifying": "Signing you in…",
+    "invalid": "This link is invalid or has expired.",
+    "noGate": "No public content requires an account.",
+    "accountTitle": "My account",
+    "accountBody": "Your account will support application tracking, watchlists and reminders. No personalized advice.",
+    "signedOut": "Sign in to retrieve your preferences.",
+    "signIn": "Sign in",
+    "signOut": "Sign out"
   },
   "footer": {
     "tagline": "The reference equity research service for the BRVM, French-first.",
@@ -52,13 +73,15 @@
     "colCompany": "Company",
     "colFiscalYear": "Fiscal year",
     "colAmount": "Net dividend",
+    "colYield": "Yield",
     "colExDate": "Ex-date",
     "colPaymentDate": "Payment",
     "colStatus": "Status",
     "statusProposed": "Proposed",
     "statusApproved": "Approved",
     "statusPaid": "Paid",
-    "empty": "No dividends recorded yet."
+    "empty": "No dividends recorded yet.",
+    "exportIcs": "Add to calendar"
   },
   "companies": {
     "title": "Listed companies",

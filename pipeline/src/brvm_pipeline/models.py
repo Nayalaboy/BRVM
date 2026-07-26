@@ -82,6 +82,7 @@ class RunJob(enum.StrEnum):
     BACKFILL = "backfill"
     BOC_INVENTORY = "boc_inventory"
     WEEKLY_REGISTRY = "weekly_registry"
+    WEEKLY_INTELLIGENCE = "weekly_intelligence"
     SEED = "seed"
 
 
@@ -480,6 +481,72 @@ class CorporateEvent(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
 
 
+class GovDocument(Base):
+    """Archived official government or regional-market publication."""
+
+    __tablename__ = "gov_documents"
+    __table_args__ = (
+        UniqueConstraint("capture_url", name="uq_gov_document_capture_url"),
+        Index("ix_gov_document_date", "publication_date"),
+        Index("ix_gov_document_country_body", "source_country", "body"),
+    )
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    source_country: Mapped[str | None] = mapped_column(String(12))
+    body: Mapped[str] = mapped_column(String(160))
+    publication_date: Mapped[date | None] = mapped_column(Date)
+    doc_type: Mapped[str] = mapped_column(String(50))
+    title: Mapped[str] = mapped_column(String(500))
+    document_id: Mapped[int] = mapped_column(
+        ForeignKey("documents.id", ondelete="RESTRICT")
+    )
+    capture_url: Mapped[str] = mapped_column(String(700))
+    official_source_url: Mapped[str] = mapped_column(String(700))
+    captured_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=utcnow
+    )
+    ingestion_run_id: Mapped[int | None] = mapped_column(
+        ForeignKey("ingestion_runs.id", ondelete="SET NULL")
+    )
+
+
+class MarketEvent(Base):
+    """Human-tagged factual event; only reviewed rows are public."""
+
+    __tablename__ = "market_events"
+    __table_args__ = (
+        Index("ix_market_event_date_status", "event_date", "review_status"),
+        Index("ix_market_event_document", "gov_document_id"),
+    )
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    gov_document_id: Mapped[int] = mapped_column(
+        ForeignKey("gov_documents.id", ondelete="CASCADE")
+    )
+    event_date: Mapped[date] = mapped_column(Date)
+    event_type: Mapped[str] = mapped_column(String(60))
+    summary_fr: Mapped[str] = mapped_column(String(500))
+    summary_en: Mapped[str | None] = mapped_column(String(500))
+    review_status: Mapped[str] = mapped_column(String(20), default="pending")
+    reviewed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=utcnow, onupdate=utcnow
+    )
+
+
+class MarketEventCompany(Base):
+    __tablename__ = "market_event_companies"
+    __table_args__ = (Index("ix_market_event_company_company", "company_id"),)
+
+    event_id: Mapped[int] = mapped_column(
+        ForeignKey("market_events.id", ondelete="CASCADE"), primary_key=True
+    )
+    company_id: Mapped[int] = mapped_column(
+        ForeignKey("companies.id", ondelete="CASCADE"), primary_key=True
+    )
+
+
 class LicensedEntity(Base):
     """Official CREPMF / BRVM registry of SGIs and agreed intermediaries."""
 
@@ -551,3 +618,36 @@ class NewsletterSignup(Base):
     provider_id: Mapped[str | None] = mapped_column(String(120))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
     confirmed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+
+class AuthUser(Base):
+    """Lightweight Phase 1 account owned by the pipeline schema."""
+
+    __tablename__ = "auth_users"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    email: Mapped[str] = mapped_column(String(320), unique=True, index=True)
+    name: Mapped[str | None] = mapped_column(String(200))
+    image: Mapped[str | None] = mapped_column(String(700))
+    locale: Mapped[str] = mapped_column(String(2), default="fr")
+    role: Mapped[str] = mapped_column(String(20), default="user")
+    email_verified_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=utcnow, onupdate=utcnow
+    )
+
+
+class AuthMagicLink(Base):
+    """Single-use hashed email login token. Raw tokens are never persisted."""
+
+    __tablename__ = "auth_magic_links"
+    __table_args__ = (Index("ix_auth_magic_email_created", "email", "created_at"),)
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    email: Mapped[str] = mapped_column(String(320))
+    token_hash: Mapped[str] = mapped_column(String(64), unique=True)
+    locale: Mapped[str] = mapped_column(String(2), default="fr")
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    consumed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)

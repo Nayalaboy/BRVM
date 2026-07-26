@@ -167,6 +167,7 @@ export interface CompanyDetail {
     ytdReturn: number | null;
     avgDailyValue20d: number | null;
   }[];
+  events: MarketEvent[];
 }
 
 export async function getCompany(ticker: string): Promise<CompanyDetail | null> {
@@ -199,6 +200,7 @@ export async function getCompany(ticker: string): Promise<CompanyDetail | null> 
       dividend_yield: number | null; ytd_return: number | null;
       avg_daily_value_20d: number | null;
     }[];
+    events?: ApiMarketEvent[];
   };
   return {
     ticker: d.ticker, name: d.name, sector: d.sector, country: d.country,
@@ -224,7 +226,65 @@ export async function getCompany(ticker: string): Promise<CompanyDetail | null> 
       dividendYield: x.dividend_yield, ytdReturn: x.ytd_return,
       avgDailyValue20d: x.avg_daily_value_20d,
     })),
+    events: (d.events ?? []).map(mapMarketEvent),
   };
+}
+
+export interface MarketEvent {
+  id: number;
+  date: string;
+  eventType: string;
+  summaryFr: string;
+  summaryEn: string | null;
+  country: string | null;
+  body: string;
+  tickers: string[];
+  sourceTitle: string;
+  sourceUrl: string;
+  documentRef: string;
+}
+
+interface ApiMarketEvent {
+  id: number;
+  date: string;
+  event_type: string;
+  summary_fr: string;
+  summary_en: string | null;
+  country: string | null;
+  body: string;
+  tickers: string[];
+  source_title: string;
+  source_url: string;
+  document_ref: string;
+}
+
+function mapMarketEvent(event: ApiMarketEvent): MarketEvent {
+  return {
+    id: event.id,
+    date: event.date,
+    eventType: event.event_type,
+    summaryFr: event.summary_fr,
+    summaryEn: event.summary_en,
+    country: event.country,
+    body: event.body,
+    tickers: event.tickers,
+    sourceTitle: event.source_title,
+    sourceUrl: event.source_url,
+    documentRef: event.document_ref,
+  };
+}
+
+export async function getMarketEvents(filters?: {
+  country?: string;
+  ticker?: string;
+  limit?: number;
+}): Promise<MarketEvent[]> {
+  const params = new URLSearchParams();
+  if (filters?.country) params.set("country", filters.country);
+  if (filters?.ticker) params.set("ticker", filters.ticker);
+  params.set("limit", String(filters?.limit ?? 100));
+  const rows = await get<ApiMarketEvent[]>(`/events?${params.toString()}`, 300);
+  return rows.map(mapMarketEvent);
 }
 
 export interface Quote {

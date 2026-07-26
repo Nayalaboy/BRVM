@@ -178,6 +178,37 @@ export default async function CompanyPage({
         )}
       </section>
 
+      {company.events.length > 0 ? (
+        <section className="space-y-3">
+          <div className="flex items-center justify-between gap-3">
+            <h2 className="text-lg font-semibold text-slate-900">
+              {locale === "fr" ? "Décisions publiques récentes" : "Recent public decisions"}
+            </h2>
+            <a href={`/decisions?ticker=${company.ticker}`} className="text-xs font-bold text-brand-700 underline">
+              {locale === "fr" ? "Tout voir" : "View all"}
+            </a>
+          </div>
+          <div className="divide-y divide-slate-200 border-y border-slate-200">
+            {company.events.map((event) => (
+              <article key={event.id} className="grid gap-2 py-4 sm:grid-cols-[130px_1fr]">
+                <div className="font-mono text-xs text-slate-500">
+                  <p className="font-bold text-slate-900">{formatDate(event.date, locale)}</p>
+                  <p>{event.country ?? "UEMOA"} · {event.eventType.replaceAll("_", " ")}</p>
+                </div>
+                <div>
+                  <p className="text-sm leading-relaxed text-slate-800">
+                    {locale === "en" && event.summaryEn ? event.summaryEn : event.summaryFr}
+                  </p>
+                  <a href={event.sourceUrl} target="_blank" rel="noreferrer" className="mt-2 inline-block text-xs font-bold text-brand-700 underline">
+                    {locale === "fr" ? "Source officielle" : "Official source"} · {event.documentRef}
+                  </a>
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+      ) : null}
+
       {company.peers.length > 0 ? (
         <section className="space-y-3">
           <h2 className="text-lg font-semibold text-slate-900">

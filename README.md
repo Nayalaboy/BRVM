@@ -82,6 +82,38 @@ aucune lacune ou mise en page inconnue n'est ignorée silencieusement.
 **Modifier le schéma.** Éditez `pipeline/src/brvm_pipeline/models.py`, puis
 `make revision m="…"` → relisez la migration → `make migrate`.
 
+**Auth légère (Phase 1).** Le schéma utilisateur et les liens à usage unique
+appartiennent au pipeline; Auth.js utilise des sessions JWT et synchronise
+Google via l'API FastAPI. Configurez `AUTH_SECRET`, puis la même valeur aléatoire
+dans `AUTH_SYNC_SECRET` et `BRVM_AUTH_SYNC_SECRET`. Le lien e-mail utilise
+`BRVM_RESEND_API_KEY`; Google nécessite `AUTH_GOOGLE_ID` et
+`AUTH_GOOGLE_SECRET`. Aucun contenu public n'est protégé par une connexion.
+
+**Décisions officielles.** `make intelligence` archive chaque semaine les
+publications officielles des conseils des ministres des huit États de l'UEMOA
+(Bénin, Burkina Faso, Côte d'Ivoire, Guinée-Bissau, Mali, Niger, Sénégal et
+Togo), les avis BRVM et les publications UMOA-Titres. Configurez
+`BRVM_AMF_UMOA_PUBLICATIONS_URL` uniquement avec l'index officiel vérifié de
+l'AMF-UMOA. Une source sans index officiel courant peut légitimement retourner
+zéro document; aucun média ou miroir ne la remplace. Les fichiers/pages bruts sont
+dédupliqués par SHA-256 dans le même stockage immuable que les BOC.
+
+Inspectez la file dans `gov_documents`, puis créez un événement relu :
+
+```bash
+make tag-event document_id=42 event_type=nomination \
+  summary_fr="Le Conseil a nommé un nouveau directeur général." \
+  tickers=TEST event_date=2026-07-24
+```
+
+Types autorisés : `tarification`, `fiscalité`, `participation_etat`,
+`privatisation_levee_fonds`, `reglementation_sectorielle`, `nomination`.
+Ajoutez `review_status=pending` si une seconde relecture reste nécessaire.
+Seuls les événements `reviewed` sortent sur `/events`, `/decisions` et les
+fiches sociétés. Résumez un fait passé en une phrase, sans causalité supposée,
+prévision d'impact ou signal d'achat/vente; conservez toujours l'URL officielle
+et la référence `GOV-<id>`.
+
 **Déployer.** Voir [`DEPLOYMENT.md`](DEPLOYMENT.md) (Vercel + Postgres managé +
 API FastAPI + cron GitHub Actions).
 

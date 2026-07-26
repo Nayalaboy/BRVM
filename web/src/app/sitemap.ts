@@ -17,6 +17,7 @@ const PAGES: [string, string][] = [
   ["/lexique", "/en/glossary"],
   ["/newsletter", "/en/newsletter"],
   ["/intelligence", "/en/intelligence"],
+  ["/decisions", "/en/decisions"],
   ["/methodologie", "/en/methodology"],
   ["/statut", "/en/status"],
   ["/conditions", "/en/terms"],

@@ -21,9 +21,12 @@ from ..models import (
     DailyQuote,
     Dividend,
     Document,
+    GovDocument,
     IndexValue,
     IngestionRun,
     LicensedEntity,
+    MarketEvent,
+    MarketEventCompany,
     MarketRecap,
     PrimaryOperation,
     RunStatus,
@@ -160,6 +163,7 @@ def company_detail(ticker: str, request: Request, db: Session = Depends(get_db))
     dividend_streak = 0
     while latest_year is not None and latest_year - dividend_streak in paid_years:
         dividend_streak += 1
+    recent_events = _reviewed_events_query(db, ticker=company.ticker, limit=10)
 
     payload = {
         "ticker": company.ticker,
@@ -213,8 +217,79 @@ def company_detail(ticker: str, request: Request, db: Session = Depends(get_db))
             }
             for peer, peer_metric in peers
         ],
+        "events": recent_events,
     }
     return etag_json(request, payload)
+
+
+def _reviewed_events_query(
+    db: Session,
+    *,
+    country: str | None = None,
+    ticker: str | None = None,
+    limit: int = 50,
+) -> list[dict]:
+    stmt = (
+        select(MarketEvent, GovDocument)
+        .join(GovDocument, GovDocument.id == MarketEvent.gov_document_id)
+        .where(MarketEvent.review_status == "reviewed")
+        .order_by(MarketEvent.event_date.desc(), MarketEvent.id.desc())
+        .limit(limit)
+    )
+    if country:
+        stmt = stmt.where(GovDocument.source_country == country.upper())
+    if ticker:
+        company_id = db.scalar(
+            select(Company.id).where(Company.ticker == ticker.upper())
+        )
+        if company_id is None:
+            return []
+        stmt = stmt.join(
+            MarketEventCompany,
+            MarketEventCompany.event_id == MarketEvent.id,
+        ).where(MarketEventCompany.company_id == company_id)
+    rows = db.execute(stmt).all()
+    payload = []
+    for event, document in rows:
+        affected = db.execute(
+            select(Company.ticker)
+            .join(MarketEventCompany, MarketEventCompany.company_id == Company.id)
+            .where(MarketEventCompany.event_id == event.id)
+            .order_by(Company.ticker)
+        ).scalars().all()
+        payload.append(
+            {
+                "id": event.id,
+                "date": _iso(event.event_date),
+                "event_type": event.event_type,
+                "summary_fr": event.summary_fr,
+                "summary_en": event.summary_en,
+                "country": document.source_country,
+                "body": document.body,
+                "tickers": list(affected),
+                "source_title": document.title,
+                "source_url": document.official_source_url,
+                "document_ref": f"GOV-{document.id}",
+                "review_status": event.review_status,
+            }
+        )
+    return payload
+
+
+@router.get("/events")
+def events_feed(
+    request: Request,
+    country: str | None = Query(None, min_length=2, max_length=12),
+    ticker: str | None = Query(None, min_length=2, max_length=20),
+    limit: int = Query(50, ge=1, le=200),
+    db: Session = Depends(get_db),
+):
+    """Reviewed, factual official events. Pending documents are never returned."""
+    return etag_json(
+        request,
+        _reviewed_events_query(db, country=country, ticker=ticker, limit=limit),
+        max_age=300,
+    )
 
 
 @router.get("/quotes/{ticker}")

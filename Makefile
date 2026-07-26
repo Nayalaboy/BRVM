@@ -7,7 +7,7 @@ ALEMBIC := pipeline/.venv/bin/alembic
 UVICORN := pipeline/.venv/bin/uvicorn
 export BRVM_DATABASE_URL ?= sqlite:///$(CURDIR)/pipeline/data/brvm.sqlite
 
-.PHONY: bootstrap venv install migrate revision seed daily backfill boc-inventory registry api test lint fmt clean
+.PHONY: bootstrap venv install migrate revision seed daily backfill boc-inventory registry intelligence tag-event api test lint fmt clean
 
 ## One command: venv + deps + schema + real seed data
 bootstrap: venv install migrate seed registry
@@ -42,6 +42,12 @@ boc-inventory:
 
 registry:
 	@$(PY) -m brvm_pipeline.run weekly-registry
+
+intelligence:
+	@$(PY) -m brvm_pipeline.run weekly-intelligence
+
+tag-event:
+	@$(PY) -m brvm_pipeline.run tag-event --document-id "$(document_id)" --event-type "$(event_type)" --summary-fr "$(summary_fr)" $(if $(tickers),--tickers "$(tickers)",) $(if $(summary_en),--summary-en "$(summary_en)",) $(if $(event_date),--event-date "$(event_date)",) $(if $(review_status),--review-status "$(review_status)",)
 
 ## Read-only API for the website (http://localhost:8000/docs)
 api:

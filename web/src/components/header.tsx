@@ -4,13 +4,16 @@ import { isDemoPremium } from "@/lib/premium";
 import { LocaleSwitcher } from "./locale-switcher";
 import { MarketCommand } from "./market-command";
 import { MarketTicker } from "./market-ticker";
+import { auth } from "@/lib/auth";
 
 export async function Header() {
   const t = await getTranslations("nav");
   const premium = await isDemoPremium();
+  const session = await auth();
 
   const links = [
     { href: "/intelligence", label: t("intelligence") },
+    { href: "/decisions", label: t("decisions") },
     { href: "/dividendes", label: t("dividends") },
     { href: "/societes", label: t("companies") },
     { href: "/screener", label: t("screener") },
@@ -40,6 +43,12 @@ export async function Header() {
               </Link>
             ) : null}
             <LocaleSwitcher />
+            <Link
+              href={session?.user ? "/compte" : "/connexion"}
+              className="border border-zinc-700 px-2 py-1 text-[10px] font-bold uppercase text-white hover:border-brand-500"
+            >
+              {session?.user ? t("account") : t("signIn")}
+            </Link>
           </div>
         </div>
       </div>

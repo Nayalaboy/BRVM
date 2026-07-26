@@ -7,8 +7,29 @@
     "lexicon": "Lexique",
     "screener": "Screener",
     "intelligence": "Intelligence",
+    "decisions": "Décisions publiques",
     "premiumDemo": "Premium (démo)",
-    "openAccount": "Ouvrir un compte titres"
+    "openAccount": "Ouvrir un compte titres",
+    "signIn": "Connexion",
+    "account": "Mon compte"
+  },
+  "auth": {
+    "eyebrow": "Compte Aqlee",
+    "title": "Se connecter",
+    "body": "Enregistrez bientôt votre progression SGI, vos rappels et vos alertes. Toutes les informations publiques restent accessibles sans compte.",
+    "email": "Adresse e-mail",
+    "emailCta": "Recevoir un lien de connexion",
+    "googleCta": "Continuer avec Google",
+    "sent": "Lien envoyé. Vérifiez votre boîte de réception.",
+    "error": "Le lien n'a pas pu être envoyé. Réessayez.",
+    "verifying": "Connexion en cours…",
+    "invalid": "Ce lien est invalide ou expiré.",
+    "noGate": "Aucun contenu public n'est réservé aux comptes.",
+    "accountTitle": "Mon compte",
+    "accountBody": "Votre compte servira au suivi de dossier, aux listes de suivi et aux rappels. Aucun conseil personnalisé.",
+    "signedOut": "Connectez-vous pour retrouver vos préférences.",
+    "signIn": "Se connecter",
+    "signOut": "Se déconnecter"
   },
   "footer": {
     "tagline": "La recherche actions de référence sur la BRVM, en français.",
@@ -52,13 +73,15 @@
     "colCompany": "Société",
     "colFiscalYear": "Exercice",
     "colAmount": "Dividende net",
+    "colYield": "Rendement",
     "colExDate": "Détachement",
     "colPaymentDate": "Paiement",
     "colStatus": "Statut",
     "statusProposed": "Proposé",
     "statusApproved": "Approuvé",
     "statusPaid": "Payé",
-    "empty": "Aucun dividende enregistré pour le moment."
+    "empty": "Aucun dividende enregistré pour le moment.",
+    "exportIcs": "Exporter au calendrier"
   },
   "companies": {
     "title": "Sociétés cotées",

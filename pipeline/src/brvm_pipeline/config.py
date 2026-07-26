@@ -43,6 +43,26 @@ class Settings(BaseSettings):
 
     # --- Source endpoints (overridable for tests / mirrors) -----------------
     brvm_base_url: str = "https://www.brvm.org"
+    ci_council_url: str = (
+        "https://www.gouv.ci/publications/documents/Conseils%20des%20Ministres"
+    )
+    sn_council_url: str = (
+        "https://primature.sn/publications/conseil-des-ministres"
+    )
+    bj_council_url: str = "https://sgg.gouv.bj/comptes-rendus-conseils-ministres/"
+    bf_council_url: str = "https://gouvernement.gov.bf/?s=conseil+des+ministres"
+    ml_council_url: str = (
+        "https://gouvernement.ml/category/conseil-des-ministres/"
+    )
+    ne_council_url: str = (
+        "https://www.gouv.ne/index.php/les-communiques-du-gouvernement"
+    )
+    tg_council_url: str = "https://www.republiquetogolaise.com/communiques/listes"
+    gw_council_url: str = "https://www.presidencia.gw/noticias"
+    umoa_titres_publications_url: str = (
+        "https://www.umoatitres.org/fr/category/publications/"
+    )
+    amf_umoa_publications_url: str | None = None
     # Politeness: minimum seconds between requests to the same host.
     request_min_interval_s: float = 1.5
     request_timeout_s: float = 30.0
@@ -57,6 +77,13 @@ class Settings(BaseSettings):
     resend_api_key: str | None = None
     alert_email_to: str | None = None
     alert_email_from: str = "Aqlee Invest Pipeline <pipeline@aqlee.invest>"
+
+    # --- Lightweight authentication ----------------------------------------
+    auth_sync_secret: str | None = None
+    auth_app_url: str = "http://localhost:3000"
+    auth_email_from: str = "Aqlee Invest <connexion@aqlee.invest>"
+    auth_magic_link_ttl_minutes: int = 20
+    auth_dev_mode: bool = False
 
     # --- API ---------------------------------------------------------------
     api_cors_origins: str = "*"

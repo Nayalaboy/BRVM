@@ -20,10 +20,17 @@ export const routing = defineRouting({
     "/recap/[date]": "/recap/[date]",
     "/newsletter": "/newsletter",
     "/intelligence": { fr: "/intelligence", en: "/intelligence" },
+    "/decisions": { fr: "/decisions", en: "/decisions" },
     "/methodologie": { fr: "/methodologie", en: "/methodology" },
     "/statut": { fr: "/statut", en: "/status" },
     "/conditions": { fr: "/conditions", en: "/terms" },
     "/confidentialite": { fr: "/confidentialite", en: "/privacy" },
+    "/connexion": { fr: "/connexion", en: "/sign-in" },
+    "/connexion/verification": {
+      fr: "/connexion/verification",
+      en: "/sign-in/verification",
+    },
+    "/compte": { fr: "/compte", en: "/account" },
   },
 });
 

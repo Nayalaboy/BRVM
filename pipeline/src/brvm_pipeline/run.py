@@ -32,13 +32,23 @@ from .collectors.brvm_quotes import BrvmQuotesCollector
 from .collectors.corporate_actions import BrvmDividendsCollector
 from .collectors.http import PoliteClient
 from .collectors.indices import BrvmIndicesCollector
+from .collectors.official_intelligence import OfficialIntelligenceCollector
 from .collectors.operations import OperationsCollector
 from .collectors.registry import LicensedEntityCollector
 from .db import session_scope
 from .derived.metrics import recompute_all
 from .derived.recap import build_recap
 from .logging import configure_logging, get_logger
-from .models import DailyQuote, IngestionRun, RunJob, RunStatus
+from .models import (
+    Company,
+    DailyQuote,
+    GovDocument,
+    IngestionRun,
+    MarketEvent,
+    MarketEventCompany,
+    RunJob,
+    RunStatus,
+)
 from .quality.checks import run_quality_checks
 
 app = typer.Typer(add_completion=False, help="BRVM data pipeline")
@@ -148,6 +158,78 @@ def weekly_registry() -> None:
     stats = {"collectors": {r.collector: r.as_stats() for r in results}}
     _finalize(run_id, RunStatus.SUCCESS.value if all_ok else RunStatus.PARTIAL.value, stats)
     log.info("weekly_registry_done", ok=all_ok)
+
+
+@app.command("weekly-intelligence")
+def weekly_intelligence() -> None:
+    """Archive new official government and regional-market publications."""
+    configure_logging()
+    run_id = _open_run(RunJob.WEEKLY_INTELLIGENCE.value)
+    results, all_ok = _run_collectors([OfficialIntelligenceCollector()], run_id)
+    stats = {"collectors": {r.collector: r.as_stats() for r in results}}
+    _finalize(run_id, RunStatus.SUCCESS.value if all_ok else RunStatus.PARTIAL.value, stats)
+    log.info("weekly_intelligence_done", ok=all_ok)
+
+
+EVENT_TYPES = {
+    "tarification",
+    "fiscalité",
+    "participation_etat",
+    "privatisation_levee_fonds",
+    "reglementation_sectorielle",
+    "nomination",
+}
+
+
+@app.command("tag-event")
+def tag_event(
+    document_id: int = typer.Option(..., help="gov_documents.id to tag"),
+    event_type: str = typer.Option(..., help="Controlled factual event type"),
+    summary_fr: str = typer.Option(..., help="One factual sentence, no prediction"),
+    tickers: str = typer.Option("", help="Comma-separated BRVM tickers"),
+    summary_en: str | None = typer.Option(None),
+    event_date: str | None = typer.Option(None, help="ISO date; defaults to publication date"),
+    review_status: str = typer.Option("reviewed", help="pending, reviewed, or rejected"),
+) -> None:
+    """Human-tag one archived document; reviewed events become public."""
+    if event_type not in EVENT_TYPES:
+        raise typer.BadParameter(f"event-type must be one of: {', '.join(sorted(EVENT_TYPES))}")
+    if review_status not in {"pending", "reviewed", "rejected"}:
+        raise typer.BadParameter("review-status must be pending, reviewed, or rejected")
+    if len(summary_fr.strip()) < 10 or len(summary_fr) > 500:
+        raise typer.BadParameter("summary-fr must contain 10–500 characters")
+    with session_scope() as s:
+        gov_document = s.get(GovDocument, document_id)
+        if gov_document is None:
+            raise typer.BadParameter(f"government document {document_id} does not exist")
+        parsed_event_date = (
+            datetime.strptime(event_date, "%Y-%m-%d").date()
+            if event_date
+            else gov_document.publication_date
+        )
+        if parsed_event_date is None:
+            raise typer.BadParameter("event-date is required when the document has no date")
+        requested = {ticker.strip().upper() for ticker in tickers.split(",") if ticker.strip()}
+        companies = list(
+            s.scalars(select(Company).where(Company.ticker.in_(requested)))
+        ) if requested else []
+        missing = requested - {company.ticker for company in companies}
+        if missing:
+            raise typer.BadParameter(f"unknown ticker(s): {', '.join(sorted(missing))}")
+        event = MarketEvent(
+            gov_document_id=gov_document.id,
+            event_date=parsed_event_date,
+            event_type=event_type,
+            summary_fr=summary_fr.strip(),
+            summary_en=summary_en.strip() if summary_en else None,
+            review_status=review_status,
+            reviewed_at=datetime.now(UTC) if review_status == "reviewed" else None,
+        )
+        s.add(event)
+        s.flush()
+        for company in companies:
+            s.add(MarketEventCompany(event_id=event.id, company_id=company.id))
+        typer.echo(f"event {event.id} created ({review_status})")
 
 
 @app.command()

@@ -12,6 +12,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from ..config import get_settings
+from .auth_routes import router as auth_router
 from .routes import router
 
 DISCLAIMER = {
@@ -33,7 +34,7 @@ def create_app() -> FastAPI:
     app = FastAPI(
         title="Aqlee Invest — BRVM data API",
         version="0.1.0",
-        description="Read-only BRVM market data (quotes, dividends, indices, registry).",
+        description="BRVM market data plus the pipeline-owned account boundary.",
     )
     app.add_middleware(
         CORSMiddleware,
@@ -51,6 +52,7 @@ def create_app() -> FastAPI:
         return DISCLAIMER
 
     app.include_router(router)
+    app.include_router(auth_router)
     return app
 
 
