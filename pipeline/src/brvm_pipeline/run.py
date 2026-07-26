@@ -20,6 +20,13 @@ from sqlalchemy import func, select
 from . import __version__
 from .alerts import send_failure_alert
 from .collectors.base import CollectContext, CollectResult
+from .collectors.boc_archive import (
+    BocArchiveCandidateCollector,
+    BocArchiveDownloadCollector,
+    BocArchiveInventoryCollector,
+    BocArchiveLoadCollector,
+    BocArchiveParseCollector,
+)
 from .collectors.boc_documents import BocDocumentsCollector
 from .collectors.brvm_quotes import BrvmQuotesCollector
 from .collectors.corporate_actions import BrvmDividendsCollector
@@ -147,23 +154,69 @@ def weekly_registry() -> None:
 def backfill(
     since: str = typer.Option(None, help="ISO date lower bound (inclusive)"),
     until: str = typer.Option(None, help="ISO date upper bound (inclusive)"),
+    stage: str = typer.Option(
+        "all", help="Archive stage: discover, download, parse, load, or all"
+    ),
+    limit: int = typer.Option(
+        None, help="Maximum PDFs to download in this run (discovery is unlimited)"
+    ),
+    retry_failed: bool = typer.Option(False, help="Retry failed archive downloads"),
+    force_reparse: bool = typer.Option(False, help="Reparse reviewed/parsed PDFs"),
 ) -> None:
-    """Re-run the daily collectors (idempotent). NOTE: brvm.org only serves the
-    latest session; true historical OHLCV backfill needs a history source and is
-    tracked as a follow-up. Recomputes metrics across whatever history exists."""
+    """Discover and cache historical official BOC PDFs, resumably."""
     configure_logging()
+    valid_stages = {"discover", "download", "parse", "load", "all"}
+    if stage not in valid_stages:
+        raise typer.BadParameter(f"stage must be one of: {', '.join(sorted(valid_stages))}")
     run_id = _open_run(RunJob.BACKFILL.value)
-    results, all_ok = _run_collectors(
-        [BrvmQuotesCollector(), BrvmIndicesCollector(), BrvmDividendsCollector()],
-        run_id, since=since, until=until,
+    stats: dict = {}
+    try:
+        collectors = []
+        if stage in {"discover", "all"}:
+            collectors.extend(
+                [BocArchiveInventoryCollector(), BocArchiveCandidateCollector()]
+            )
+        if stage in {"download", "all"}:
+            collectors.append(
+                BocArchiveDownloadCollector(limit=limit, retry_failed=retry_failed)
+            )
+        if stage in {"parse", "all"}:
+            collectors.append(
+                BocArchiveParseCollector(limit=limit, force=force_reparse)
+            )
+        if stage in {"load", "all"}:
+            collectors.append(BocArchiveLoadCollector(limit=limit))
+        results, all_ok = _run_collectors(
+            collectors, run_id, since=since, until=until
+        )
+        stats = {"collectors": {r.collector: r.as_stats() for r in results}}
+        status = RunStatus.SUCCESS.value if all_ok else RunStatus.PARTIAL.value
+        _finalize(run_id, status, stats)
+        log.info("backfill_done", ok=all_ok, stage=stage)
+    except Exception as exc:  # noqa: BLE001
+        _finalize(run_id, RunStatus.FAILED.value, stats, error=str(exc))
+        log.error("backfill_failed", error=str(exc), stage=stage)
+        raise typer.Exit(code=1) from exc
+
+
+@app.command("boc-inventory")
+def boc_inventory(
+    since: str = typer.Option("2015-01-01", help="ISO date lower bound"),
+    until: str = typer.Option(None, help="ISO date upper bound"),
+) -> None:
+    """Inventory official BOC archive URLs without downloading PDF bodies."""
+    configure_logging()
+    run_id = _open_run(RunJob.BOC_INVENTORY.value)
+    results, ok = _run_collectors(
+        [BocArchiveInventoryCollector(), BocArchiveCandidateCollector()],
+        run_id,
+        since=since,
+        until=until,
     )
-    as_of = _latest_quote_date()
-    if as_of:
-        with session_scope() as s:
-            recompute_all(s, as_of)
     stats = {"collectors": {r.collector: r.as_stats() for r in results}}
-    _finalize(run_id, RunStatus.SUCCESS.value if all_ok else RunStatus.PARTIAL.value, stats)
-    log.info("backfill_done", ok=all_ok)
+    _finalize(run_id, RunStatus.SUCCESS.value if ok else RunStatus.PARTIAL.value, stats)
+    if not ok:
+        raise typer.Exit(code=1)
 
 
 @app.command()

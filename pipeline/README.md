@@ -59,9 +59,28 @@ Once it appears on brvm.org, the daily collector keeps it current automatically.
 (every field verified), then `make registry`. Leave it empty rather than ship an
 unverified operation — `/operations` returns `[]` safely.
 
-**Backfill.** `make backfill since=2026-01-01`. brvm.org only serves the latest
-session, so deep OHLCV history needs a history source (tracked follow-up); this
-target re-runs collectors idempotently and recomputes metrics over what exists.
+**BOC archive crawl.** Apply migrations, inventory official archive URLs, then
+download them into the content-addressed raw store:
+
+```bash
+make migrate
+make boc-inventory since=2015-01-01
+make backfill since=2015-01-01 stage=download limit=100
+make backfill since=2015-01-01 stage=download limit=100 retry_failed=1
+make backfill since=2015-01-01 stage=parse limit=100
+make backfill since=2015-01-01 stage=load limit=100
+```
+
+`make backfill` defaults to `stage=all`. Every stage is independently
+resumable. The public pages expose a rolling window, but the official financial
+archive uses the verified `BOC_YYYYMMDD.pdf` convention back to 2015; discovery
+checkpoints bounded weekday candidates without assuming they were trading
+sessions. Downloads establish which PDFs exist. Parsed rows first enter
+`quote_observations`; only validated documents load into `daily_quotes`.
+Unsupported layouts become explicit `ingestion_issues`. Each loaded quote links
+the exact BOC document, PDF page and table section. English duplicate bulletins
+remain archived but are marked `skipped`; the French BOC is the parsing source
+of record.
 
 **Change the schema.** Edit `models.py`, then
 `make revision m="describe change"` → review the generated file in

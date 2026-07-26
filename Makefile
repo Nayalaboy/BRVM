@@ -7,7 +7,7 @@ ALEMBIC := pipeline/.venv/bin/alembic
 UVICORN := pipeline/.venv/bin/uvicorn
 export BRVM_DATABASE_URL ?= sqlite:///$(CURDIR)/pipeline/data/brvm.sqlite
 
-.PHONY: bootstrap venv install migrate revision seed daily backfill registry api test lint fmt clean
+.PHONY: bootstrap venv install migrate revision seed daily backfill boc-inventory registry api test lint fmt clean
 
 ## One command: venv + deps + schema + real seed data
 bootstrap: venv install migrate seed registry
@@ -35,7 +35,10 @@ daily:
 	@$(PY) -m brvm_pipeline.run daily
 
 backfill:
-	@$(PY) -m brvm_pipeline.run backfill $(if $(since),--since $(since),) $(if $(until),--until $(until),)
+	@$(PY) -m brvm_pipeline.run backfill $(if $(since),--since $(since),) $(if $(until),--until $(until),) $(if $(stage),--stage $(stage),) $(if $(limit),--limit $(limit),) $(if $(retry_failed),--retry-failed,) $(if $(force_reparse),--force-reparse,)
+
+boc-inventory:
+	@$(PY) -m brvm_pipeline.run boc-inventory $(if $(since),--since $(since),) $(if $(until),--until $(until),)
 
 registry:
 	@$(PY) -m brvm_pipeline.run weekly-registry

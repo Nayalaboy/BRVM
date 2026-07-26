@@ -70,8 +70,14 @@ sur brvm.org, le collecteur quotidien la met à jour automatiquement.
 `pipeline/src/brvm_pipeline/data/operations.py` depuis la note d'information
 officielle (chaque champ vérifié) puis `make registry`.
 
-**Backfill.** `make backfill since=2026-01-01` (brvm.org ne sert que la dernière
-séance ; l'historique OHLCV profond nécessite une source dédiée — suivi).
+**Archive BOC et backfill.** `make boc-inventory since=2015-01-01` inventorie
+les deux surfaces officielles sans télécharger les PDF. Puis
+`make backfill since=2015-01-01 stage=download limit=100` archive un lot
+reprenable et dédupliqué par hash. Les états, tentatives et erreurs sont
+conservés dans `archive_items`. Enchaînez avec `stage=parse`, puis `stage=load`:
+les lignes passent d'abord par une table de staging et un contrôle minimum de
+couverture. Chaque cours chargé conserve le document BOC, la page et la section;
+aucune lacune ou mise en page inconnue n'est ignorée silencieusement.
 
 **Modifier le schéma.** Éditez `pipeline/src/brvm_pipeline/models.py`, puis
 `make revision m="…"` → relisez la migration → `make migrate`.

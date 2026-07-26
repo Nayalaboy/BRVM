@@ -127,6 +127,7 @@ def _publication_date(title: str, url: str) -> date | None:
     """
     text = f"{title} {url}"
     patterns = (
+        (r"(?<!\d)(20\d{2})(\d{2})(\d{2})(?!\d)", True),
         (r"(?<!\d)(20\d{2})[-_/](\d{1,2})[-_/](\d{1,2})(?!\d)", True),
         (r"(?<!\d)(\d{1,2})[-_. /](\d{1,2})[-_. /](20\d{2})(?!\d)", False),
     )

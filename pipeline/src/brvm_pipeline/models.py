@@ -80,6 +80,7 @@ class DividendStatus(enum.StrEnum):
 class RunJob(enum.StrEnum):
     DAILY = "daily"
     BACKFILL = "backfill"
+    BOC_INVENTORY = "boc_inventory"
     WEEKLY_REGISTRY = "weekly_registry"
     SEED = "seed"
 
@@ -89,6 +90,16 @@ class RunStatus(enum.StrEnum):
     SUCCESS = "success"
     PARTIAL = "partial"
     FAILED = "failed"
+
+
+class ArchiveStatus(enum.StrEnum):
+    DISCOVERED = "discovered"
+    DOWNLOADED = "downloaded"
+    PARSED = "parsed"
+    LOADED = "loaded"
+    FAILED = "failed"
+    REVIEW = "review"
+    SKIPPED = "skipped"
 
 
 class OperationType(enum.StrEnum):
@@ -188,6 +199,11 @@ class DailyQuote(Base):
     ingestion_run_id: Mapped[int | None] = mapped_column(
         ForeignKey("ingestion_runs.id", ondelete="SET NULL")
     )
+    document_id: Mapped[int | None] = mapped_column(
+        ForeignKey("documents.id", ondelete="SET NULL")
+    )
+    source_page: Mapped[int | None] = mapped_column(Integer)
+    source_section: Mapped[str | None] = mapped_column(String(120))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
 
     company: Mapped[Company] = relationship(back_populates="quotes")
@@ -258,6 +274,105 @@ class Document(Base):
     ingestion_run_id: Mapped[int | None] = mapped_column(
         ForeignKey("ingestion_runs.id", ondelete="SET NULL")
     )
+
+
+class ArchiveItem(Base):
+    """One official archive entry and its resumable processing checkpoint."""
+
+    __tablename__ = "archive_items"
+    __table_args__ = (
+        UniqueConstraint("source", "source_url", name="uq_archive_source_url"),
+        Index("ix_archive_session_status", "session_date", "status"),
+    )
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    source: Mapped[str] = mapped_column(String(40))
+    session_date: Mapped[date | None] = mapped_column(Date)
+    title: Mapped[str] = mapped_column(String(500))
+    discovery_url: Mapped[str] = mapped_column(String(700))
+    source_url: Mapped[str] = mapped_column(String(700))
+    document_id: Mapped[int | None] = mapped_column(
+        ForeignKey("documents.id", ondelete="SET NULL")
+    )
+    status: Mapped[str] = mapped_column(
+        String(20), default=ArchiveStatus.DISCOVERED.value
+    )
+    attempts: Mapped[int] = mapped_column(Integer, default=0)
+    last_error: Mapped[str | None] = mapped_column(Text)
+    parser_version: Mapped[str | None] = mapped_column(String(40))
+    discovered_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=utcnow
+    )
+    downloaded_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    parsed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    loaded_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    ingestion_run_id: Mapped[int | None] = mapped_column(
+        ForeignKey("ingestion_runs.id", ondelete="SET NULL")
+    )
+
+
+class IngestionIssue(Base):
+    """An explicit, reviewable explanation for a historical-data gap."""
+
+    __tablename__ = "ingestion_issues"
+    __table_args__ = (
+        UniqueConstraint(
+            "issue_type",
+            "session_date",
+            "company_id",
+            "archive_item_id",
+            name="uq_ingestion_issue_scope",
+        ),
+        Index("ix_ingestion_issue_date_status", "session_date", "review_status"),
+    )
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    issue_type: Mapped[str] = mapped_column(String(50))
+    session_date: Mapped[date | None] = mapped_column(Date)
+    company_id: Mapped[int | None] = mapped_column(
+        ForeignKey("companies.id", ondelete="CASCADE")
+    )
+    archive_item_id: Mapped[int | None] = mapped_column(
+        ForeignKey("archive_items.id", ondelete="CASCADE")
+    )
+    explanation: Mapped[str] = mapped_column(Text)
+    review_status: Mapped[str] = mapped_column(String(20), default="open")
+    details: Mapped[dict | None] = mapped_column(JSON)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    resolved_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+
+class QuoteObservation(Base):
+    """A parsed BOC row staged for validation before the canonical quote upsert."""
+
+    __tablename__ = "quote_observations"
+    __table_args__ = (
+        UniqueConstraint(
+            "archive_item_id", "company_id", name="uq_quote_observation_item_company"
+        ),
+        Index("ix_quote_observation_date_status", "session_date", "validation_status"),
+    )
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    archive_item_id: Mapped[int] = mapped_column(
+        ForeignKey("archive_items.id", ondelete="CASCADE")
+    )
+    company_id: Mapped[int] = mapped_column(
+        ForeignKey("companies.id", ondelete="CASCADE")
+    )
+    session_date: Mapped[date] = mapped_column(Date)
+    close: Mapped[Decimal] = mapped_column(Money)
+    previous_close: Mapped[Decimal | None] = mapped_column(Money)
+    open: Mapped[Decimal | None] = mapped_column(Money)
+    volume: Mapped[int] = mapped_column(BigInteger)
+    value_traded: Mapped[Decimal | None] = mapped_column(Money)
+    source_page: Mapped[int] = mapped_column(Integer)
+    source_section: Mapped[str] = mapped_column(String(120))
+    parser_version: Mapped[str] = mapped_column(String(40))
+    raw_fields: Mapped[list] = mapped_column(JSON)
+    validation_status: Mapped[str] = mapped_column(String(20), default="pending")
+    validation_error: Mapped[str | None] = mapped_column(Text)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
 
 
 class IngestionRun(Base):
