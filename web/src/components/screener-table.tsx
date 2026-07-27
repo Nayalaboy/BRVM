@@ -120,11 +120,11 @@ export function ScreenerTable({ companies }: { companies: CompanyRow[] }) {
           </thead>
           <tbody>
             {rows.map((c) => (
-              <tr key={c.ticker} className="border-b border-zinc-200 last:border-0 hover:bg-brand-50">
+              <tr key={c.ticker} className="border-b border-slate-100 last:border-0 transition hover:bg-brand-50/70">
                 <td className="px-4 py-2.5">
                   <Link
                     href={{ pathname: "/societes/[symbol]", params: { symbol: c.ticker } }}
-                    className="font-mono font-black text-brand-600 hover:underline"
+                    className="font-mono font-bold text-brand-700 hover:underline"
                   >
                     {c.ticker}
                   </Link>
@@ -138,8 +138,8 @@ export function ScreenerTable({ companies }: { companies: CompanyRow[] }) {
                   {c.dividendYield !== null ? formatPercent(c.dividendYield) : "—"}
                 </td>
                 <td
-                  className={`tabular px-4 py-3 text-right ${
-                    (c.ytdReturn ?? 0) >= 0 ? "text-brand-700" : "text-red-600"
+                  className={`tabular px-4 py-3 text-right font-semibold ${
+                    (c.ytdReturn ?? 0) >= 0 ? "text-emerald-700" : "text-rose-600"
                   }`}
                 >
                   {c.ytdReturn !== null ? formatPercent(c.ytdReturn) : "—"}

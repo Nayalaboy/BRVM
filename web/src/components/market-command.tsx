@@ -55,7 +55,7 @@ export function MarketCommand() {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="hidden min-w-56 items-center justify-between border border-zinc-600 bg-zinc-900 px-3 py-1.5 text-left text-xs text-zinc-300 hover:border-brand-400 lg:flex"
+        className="hidden min-w-56 items-center justify-between border border-white/15 bg-white/5 px-3 py-1.5 text-left text-xs text-zinc-300 transition hover:border-brand-400 hover:bg-white/10 lg:flex"
       >
         <span>{locale === "fr" ? "Rechercher une fonction" : "Search functions"}</span>
         <kbd className="border border-zinc-600 px-1.5 py-0.5 font-mono text-[10px]">⌘K</kbd>
@@ -70,9 +70,9 @@ export function MarketCommand() {
             if (event.target === event.currentTarget) setOpen(false);
           }}
         >
-          <div className="w-full max-w-xl border-2 border-brand-500 bg-black shadow-2xl">
-            <div className="flex items-center border-b border-zinc-700">
-              <span className="bg-brand-500 px-3 py-3 font-mono text-xs font-black text-black">GO</span>
+          <div className="w-full max-w-xl border border-brand-500/80 bg-[var(--ink)] shadow-2xl shadow-brand-900/30">
+            <div className="flex items-center border-b border-white/10">
+              <span className="bg-brand-500 px-3 py-3 font-mono text-xs font-bold text-[var(--ink)]">GO</span>
               <input
                 ref={input}
                 value={query}
@@ -90,7 +90,7 @@ export function MarketCommand() {
                   <button
                     type="button"
                     onClick={() => go(item.href)}
-                    className="flex w-full items-center gap-4 px-3 py-3 text-left text-sm text-zinc-200 hover:bg-brand-500 hover:text-black"
+                    className="flex w-full items-center gap-4 px-3 py-3 text-left text-sm text-zinc-200 transition hover:bg-brand-500 hover:text-[var(--ink)]"
                   >
                     <span className="w-10 font-mono font-black">{item.code}</span>
                     <span>{locale === "fr" ? item.fr : item.en}</span>

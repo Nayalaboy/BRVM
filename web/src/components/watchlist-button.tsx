@@ -25,7 +25,7 @@ export function WatchlistButton({ ticker, locale }: { ticker: string; locale: st
       type="button"
       onClick={toggle}
       aria-pressed={saved}
-      className="rounded-full border border-brand-200 bg-white px-4 py-2 text-sm font-semibold text-brand-800 hover:bg-brand-50"
+      className="border border-brand-200 bg-white px-4 py-2 text-sm font-semibold text-brand-800 transition hover:bg-brand-50"
     >
       {saved ? "★" : "☆"}{" "}
       {locale === "fr"

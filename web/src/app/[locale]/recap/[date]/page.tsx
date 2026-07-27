@@ -23,8 +23,8 @@ export default async function RecapPage({ params }: { params: Promise<{ date: st
   if (!recap) notFound();
 
   const breadth = [
-    { label: t("advancers"), value: recap.advancers, cls: "text-brand-700" },
-    { label: t("decliners"), value: recap.decliners, cls: "text-red-600" },
+    { label: t("advancers"), value: recap.advancers, cls: "text-emerald-700" },
+    { label: t("decliners"), value: recap.decliners, cls: "text-rose-600" },
     { label: t("unchanged"), value: recap.unchanged, cls: "text-slate-500" },
   ];
   const up = (recap.compositeChangePct ?? 0) >= 0;
@@ -48,7 +48,7 @@ export default async function RecapPage({ params }: { params: Promise<{ date: st
             {recap.compositeValue != null ? formatNumber(recap.compositeValue, 2) : "—"}
           </span>
           {recap.compositeChangePct != null ? (
-            <span className={`tabular text-lg font-semibold ${up ? "text-brand-700" : "text-red-600"}`}>
+            <span className={`tabular text-lg font-semibold ${up ? "text-emerald-700" : "text-rose-600"}`}>
               {up ? "+" : ""}
               {formatNumber(recap.compositeChangePct, 2)}&nbsp;%
             </span>
@@ -94,7 +94,7 @@ export default async function RecapPage({ params }: { params: Promise<{ date: st
                 >
                   {m.ticker}
                 </Link>
-                <span className={`tabular font-semibold ${m.change_pct >= 0 ? "text-brand-700" : "text-red-600"}`}>
+                <span className={`tabular font-semibold ${m.change_pct >= 0 ? "text-emerald-700" : "text-rose-600"}`}>
                   {m.change_pct >= 0 ? "+" : ""}
                   {formatNumber(m.change_pct, 2)}&nbsp;%
                 </span>

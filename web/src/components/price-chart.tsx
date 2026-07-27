@@ -26,7 +26,7 @@ export function PriceChart({ quotes, height = 180 }: { quotes: Quote[]; height?:
   const line = xy.map(([x, y], i) => `${i === 0 ? "M" : "L"}${x.toFixed(1)},${y.toFixed(1)}`).join(" ");
   const area = `${line} L${xy[xy.length - 1][0].toFixed(1)},${height - pad} L${xy[0][0].toFixed(1)},${height - pad} Z`;
   const up = points[points.length - 1].close >= points[0].close;
-  const stroke = up ? "var(--color-brand-700)" : "#dc2626";
+  const stroke = up ? "#047857" : "#e11d48";
 
   return (
     <svg

@@ -123,7 +123,7 @@ export default async function DividendsPage({
         </div>
         <a
           href="/api/dividends/ics"
-          className="rounded-full border border-brand-200 bg-white px-4 py-2 text-sm font-semibold text-brand-800 transition hover:border-brand-300 hover:bg-brand-50"
+          className="border border-brand-200 bg-white px-4 py-2 text-sm font-semibold text-brand-800 transition hover:border-brand-300 hover:bg-brand-50"
         >
           {t("exportIcs")}
         </a>
@@ -142,7 +142,7 @@ export default async function DividendsPage({
           {sectors.map((value) => <option key={value} value={value}>{value}</option>)}
         </select>
         <input name="minYield" type="number" min="0" step="0.1" defaultValue={filters.minYield} placeholder={locale === "fr" ? "Rendement min. %" : "Min. yield %"} className="rounded-lg border border-slate-300 px-3 py-2 text-sm" />
-        <button className="rounded-lg bg-brand-800 px-4 py-2 text-sm font-semibold text-white">{locale === "fr" ? "Filtrer" : "Filter"}</button>
+        <button className="bg-brand-700 px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-800">{locale === "fr" ? "Filtrer" : "Filter"}</button>
       </form>
 
       <p className="text-xs text-slate-500">

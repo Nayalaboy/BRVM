@@ -2,36 +2,50 @@
 @plugin "@tailwindcss/typography";
 
 @theme {
-  --color-brand-50: #fff4e8;
-  --color-brand-100: #ffe3c2;
-  --color-brand-200: #ffc982;
-  --color-brand-300: #ffad45;
-  --color-brand-400: #ff941a;
-  --color-brand-500: #f47b00;
-  --color-brand-600: #d76500;
-  --color-brand-700: #aa4c00;
-  --color-brand-800: #783500;
-  --color-brand-900: #451d00;
+  /* Teal ink — institutional markets accent, distinct from SikaFinance orange */
+  --color-brand-50: #f0fdfa;
+  --color-brand-100: #ccfbf1;
+  --color-brand-200: #99f6e4;
+  --color-brand-300: #5eead4;
+  --color-brand-400: #2dd4bf;
+  --color-brand-500: #0f9f8f;
+  --color-brand-600: #0d8074;
+  --color-brand-700: #0b655c;
+  --color-brand-800: #0a4f49;
+  --color-brand-900: #073833;
 
-  --color-accent-50: #eef7ff;
-  --color-accent-100: #d9edff;
-  --color-accent-200: #bce0ff;
-  --color-accent-300: #8acbff;
-  --color-accent-400: #51afff;
-  --color-accent-500: #238eea;
-  --color-accent-600: #126fc7;
-  --color-accent-700: #1259a1;
-  --color-accent-800: #154c85;
-  --color-accent-900: #183f6e;
+  /* Cool slate secondary for chrome & hierarchy */
+  --color-accent-50: #f8fafc;
+  --color-accent-100: #f1f5f9;
+  --color-accent-200: #e2e8f0;
+  --color-accent-300: #cbd5e1;
+  --color-accent-400: #94a3b8;
+  --color-accent-500: #64748b;
+  --color-accent-600: #475569;
+  --color-accent-700: #334155;
+  --color-accent-800: #1e293b;
+  --color-accent-900: #0f172a;
 
-  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
-    "Helvetica Neue", Arial, sans-serif;
-  /* Editorial serif for display headings — system stack, no web-font fetch */
-  --font-serif: Georgia, Cambria, "Times New Roman", "Noto Serif", serif;
+  --font-sans: var(--font-ibm-plex-sans), "IBM Plex Sans", ui-sans-serif, system-ui,
+    sans-serif;
+  --font-mono: var(--font-ibm-plex-mono), "IBM Plex Mono", ui-monospace, monospace;
+  --font-serif: var(--font-ibm-plex-serif), "IBM Plex Serif", Georgia, Cambria,
+    "Times New Roman", serif;
 }
 
 body {
-  @apply bg-[#f4f3ef] text-slate-950 antialiased;
+  @apply bg-[var(--surface)] text-slate-950 antialiased;
+  background-image:
+    radial-gradient(ellipse 90% 55% at 0% -10%, rgba(15, 159, 143, 0.08), transparent 55%),
+    radial-gradient(ellipse 70% 45% at 100% 0%, rgba(15, 23, 42, 0.04), transparent 50%);
+  background-attachment: fixed;
+}
+
+:root {
+  --surface: #f3f5f7;
+  --surface-elevated: #ffffff;
+  --ink: #0b1220;
+  --rule: #d4d8de;
 }
 
 .font-serif {
@@ -43,38 +57,40 @@ body {
 }
 
 ::selection {
-  background: #f47b00;
+  background: #0f9f8f;
   color: #fff;
 }
 
 :focus-visible {
-  outline: 2px solid #f47b00;
+  outline: 2px solid #0f9f8f;
   outline-offset: 2px;
 }
 
 .terminal-panel {
-  border: 1px solid #c9c7c0;
-  background: #fff;
-  box-shadow: 3px 3px 0 #111;
+  border: 1px solid var(--rule);
+  background: var(--surface-elevated);
+  box-shadow:
+    0 1px 0 rgba(15, 23, 42, 0.04),
+    0 8px 24px -12px rgba(15, 23, 42, 0.12);
 }
 
 .terminal-kicker {
-  font-family: var(--font-sans);
+  font-family: var(--font-mono);
   font-size: 0.6875rem;
-  font-weight: 800;
-  letter-spacing: 0.12em;
+  font-weight: 600;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
 }
 
 .terminal-rule {
-  border-top: 4px solid #111;
+  border-top: 2px solid var(--ink);
 }
 
 .market-grid {
   background-image:
-    linear-gradient(to right, rgba(15, 23, 42, 0.045) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(15, 23, 42, 0.045) 1px, transparent 1px);
-  background-size: 24px 24px;
+    linear-gradient(to right, rgba(15, 23, 42, 0.035) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(15, 23, 42, 0.035) 1px, transparent 1px);
+  background-size: 28px 28px;
 }
 
 .market-tape {
@@ -99,16 +115,24 @@ body {
   width: 0.45rem;
   height: 0.45rem;
   border-radius: 999px;
-  background: #111;
+  background: #0f9f8f;
 }
 
 .live-pulse::after {
   position: absolute;
   inset: -0.2rem;
-  border: 1px solid #111;
+  border: 1px solid #0f9f8f;
   border-radius: inherit;
   content: "";
   animation: live-pulse-ring 1.5s ease-out infinite;
+}
+
+.reveal {
+  animation: reveal-up 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.reveal-delay {
+  animation: reveal-up 0.65s cubic-bezier(0.22, 1, 0.36, 1) 0.12s both;
 }
 
 @keyframes market-tape-scroll {
@@ -119,6 +143,17 @@ body {
 @keyframes live-pulse-ring {
   0% { opacity: 0.8; transform: scale(0.6); }
   100% { opacity: 0; transform: scale(1.5); }
+}
+
+@keyframes reveal-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -133,6 +168,11 @@ body {
   }
 
   .market-tape-track {
+    animation: none !important;
+  }
+
+  .reveal,
+  .reveal-delay {
     animation: none !important;
   }
 }

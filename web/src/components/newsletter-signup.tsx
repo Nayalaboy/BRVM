@@ -46,13 +46,13 @@ export function NewsletterSignup() {
           onChange={(e) => setEmail(e.target.value)}
           placeholder={t("emailPlaceholder")}
           aria-label={t("emailPlaceholder")}
-          className="min-w-0 flex-1 rounded-full border border-slate-300 px-5 py-2.5 text-sm text-slate-900 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+          className="min-w-0 flex-1 border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 transition focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
         />
         <select
           value={profile}
           onChange={(e) => setProfile(e.target.value)}
           aria-label={t("profileLabel")}
-          className="rounded-full border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-700 focus:border-brand-500 focus:outline-none"
+          className="border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-700 focus:border-brand-500 focus:outline-none"
         >
           <option value="">{t("profileLabel")}</option>
           <option value="resident">{t("profileResident")}</option>
@@ -62,7 +62,7 @@ export function NewsletterSignup() {
         <button
           type="submit"
           disabled={state === "loading"}
-          className="rounded-full bg-brand-800 px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-900 disabled:opacity-60"
+          className="bg-brand-700 px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-800 disabled:opacity-60"
         >
           {state === "loading" ? t("submitting") : t("submit")}
         </button>

@@ -20,12 +20,13 @@ export async function MarketTicker() {
   ];
   const tapeItems = [...items, ...items];
   return (
-    <div className="border-b border-zinc-700 bg-black text-white">
+    <div className="border-b border-white/10 bg-[var(--ink)] text-white">
       <div className="mx-auto flex max-w-[1440px]">
-        <div className="z-10 flex shrink-0 items-center gap-2 whitespace-nowrap bg-brand-500 px-3 font-mono text-[10px] font-black uppercase text-black shadow-[8px_0_16px_rgba(0,0,0,0.65)]">
+        <div className="z-10 flex shrink-0 items-center gap-2 whitespace-nowrap bg-brand-500 px-3 font-mono text-[10px] font-bold uppercase text-[var(--ink)] shadow-[8px_0_16px_rgba(0,0,0,0.45)]">
+          <span className="live-pulse" aria-hidden />
           <span>{locale === "fr" ? "BRVM · DERNIÈRE CLÔTURE" : "BRVM · LAST CLOSE"}</span>
           {sessionDate ? (
-            <span className="border-l border-black/30 pl-2 font-bold">
+            <span className="border-l border-black/25 pl-2 font-semibold">
               {formatDate(sessionDate, locale)}
             </span>
           ) : null}
@@ -40,12 +41,12 @@ export async function MarketTicker() {
             {tapeItems.map((item, index) => (
               <div
                 key={`${index < items.length ? "a" : "b"}-${item.code}`}
-                className="flex shrink-0 items-center gap-2 border-r border-zinc-800 px-5 py-2 font-mono text-[11px]"
+                className="flex shrink-0 items-center gap-2 border-r border-white/10 px-5 py-2 font-mono text-[11px]"
                 aria-hidden={index >= items.length}
               >
-                <span className="font-bold text-zinc-300">{item.code}</span>
+                <span className="font-semibold text-zinc-300">{item.code}</span>
                 <span>{item.value == null ? "—" : formatNumber(item.value, 2)}</span>
-                <span className={(item.change ?? 0) >= 0 ? "text-emerald-400" : "text-red-400"}>
+                <span className={(item.change ?? 0) >= 0 ? "text-emerald-400" : "text-rose-400"}>
                   {item.change == null ? "—" : `${item.change >= 0 ? "+" : ""}${formatNumber(item.change, 2)}%`}
                   <span className="ml-1" aria-hidden>{(item.change ?? 0) >= 0 ? "▲" : "▼"}</span>
                 </span>

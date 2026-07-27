@@ -72,8 +72,8 @@ export function IntelligenceFeedView({
             key={value}
             type="button"
             onClick={() => setKind(value)}
-            className={`px-3 py-1.5 font-mono text-[10px] font-black uppercase ${
-              kind === value ? "bg-brand-500 text-black" : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200"
+            className={`px-3 py-1.5 font-mono text-[10px] font-bold uppercase transition ${
+              kind === value ? "bg-brand-500 text-[var(--ink)]" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
             }`}
           >
             {label}
@@ -92,20 +92,20 @@ export function IntelligenceFeedView({
             <article
               id={item.id}
               key={item.id}
-              className={`grid gap-3 border-b border-zinc-300 p-4 hover:bg-brand-50 sm:grid-cols-[72px_1fr_auto] ${
+              className={`grid gap-3 border-b border-slate-200 p-4 transition hover:bg-brand-50/70 sm:grid-cols-[72px_1fr_auto] ${
                 item.importance === "important" ? "border-l-4 border-l-brand-500" : ""
               }`}
             >
               <div>
-                <span className="inline-block bg-black px-2 py-1 font-mono text-[10px] font-black text-brand-400">
+                <span className="inline-block bg-[var(--ink)] px-2 py-1 font-mono text-[10px] font-bold text-brand-400">
                   {KIND_CODES[item.kind]}
                 </span>
                 <p className="mt-2 font-mono text-[10px] text-zinc-500">{formatDate(item.date, locale)}</p>
               </div>
               <div>
                 <div className="flex flex-wrap items-center gap-2">
-                  {item.ticker ? <span className="font-mono text-xs font-black text-brand-600">{item.ticker}</span> : null}
-                  <h2 className="font-black text-zinc-950">{locale === "fr" ? item.titleFr : item.titleEn}</h2>
+                  {item.ticker ? <span className="font-mono text-xs font-bold text-brand-700">{item.ticker}</span> : null}
+                  <h2 className="font-bold text-[var(--ink)]">{locale === "fr" ? item.titleFr : item.titleEn}</h2>
                 </div>
                 <p className="mt-1 text-sm leading-relaxed text-zinc-600">
                   {locale === "fr" ? item.summaryFr : item.summaryEn}

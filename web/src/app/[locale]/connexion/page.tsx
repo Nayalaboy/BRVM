@@ -47,7 +47,7 @@ export default async function SignInPage({
           autoComplete="email"
           required
         />
-        <button className="w-full bg-brand-500 px-4 py-2 font-black uppercase" type="submit">
+        <button className="w-full bg-brand-600 px-4 py-2.5 font-bold uppercase tracking-wide text-white transition hover:bg-brand-700" type="submit">
           {t("emailCta")}
         </button>
       </form>

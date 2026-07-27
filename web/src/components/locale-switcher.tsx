@@ -26,8 +26,8 @@ export function LocaleSwitcher() {
           }
           className={
             l === locale
-              ? "bg-brand-500 px-2.5 py-1 uppercase text-black"
-              : "bg-black px-2.5 py-1 uppercase text-zinc-400 hover:bg-zinc-800"
+              ? "bg-brand-500 px-2.5 py-1 uppercase text-[var(--ink)]"
+              : "bg-transparent px-2.5 py-1 uppercase text-zinc-400 hover:bg-white/10 hover:text-white"
           }
           aria-current={l === locale ? "true" : undefined}
         >

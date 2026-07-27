@@ -52,7 +52,7 @@ export default async function VerifierPage({
           required
           placeholder={t("placeholder")}
           aria-label={t("placeholder")}
-          className="min-w-0 flex-1 rounded-full border border-slate-300 px-5 py-2.5 text-sm text-slate-900 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+          className="min-w-0 flex-1 border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
         />
         <select
           name="country"
@@ -66,7 +66,7 @@ export default async function VerifierPage({
         </select>
         <button
           type="submit"
-          className="rounded-full bg-brand-800 px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-900"
+          className="rounded-sm bg-brand-700 px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-800"
         >
           {t("search")}
         </button>

@@ -7,29 +7,29 @@ export async function Footer() {
   const referralUrl = process.env.NEXT_PUBLIC_SGI_REFERRAL_URL;
 
   return (
-    <footer className="border-t-4 border-brand-500 bg-black text-white">
+    <footer className="border-t border-brand-500/40 bg-[var(--ink)] text-white">
       <div className="mx-auto w-full max-w-[1440px] space-y-6 px-4 py-10 sm:px-6">
         <div className="flex flex-col justify-between gap-6 md:flex-row md:items-start">
           <div className="max-w-md space-y-2">
-            <p className="font-mono text-sm font-black uppercase text-white">
-              Aqlee <span className="text-brand-500">Markets</span>
+            <p className="font-mono text-sm font-bold uppercase tracking-wide text-white">
+              Aqlee <span className="text-brand-400">Markets</span>
             </p>
-            <p className="text-sm text-zinc-400">{t("tagline")}</p>
+            <p className="text-sm leading-relaxed text-zinc-400">{t("tagline")}</p>
           </div>
           <div className="flex flex-col gap-2 text-sm">
-            <Link href="/conditions" className="text-zinc-400 hover:text-brand-400">
+            <Link href="/conditions" className="text-zinc-400 transition hover:text-brand-300">
               {t("terms")}
             </Link>
             <Link
               href="/confidentialite"
-              className="text-zinc-400 hover:text-brand-400"
+              className="text-zinc-400 transition hover:text-brand-300"
             >
               {t("privacy")}
             </Link>
-            <Link href="/methodologie" className="text-zinc-400 hover:text-brand-400">
+            <Link href="/methodologie" className="text-zinc-400 transition hover:text-brand-300">
               {t("methodology")}
             </Link>
-            <Link href="/statut" className="text-zinc-400 hover:text-brand-400">
+            <Link href="/statut" className="text-zinc-400 transition hover:text-brand-300">
               {t("dataStatus")}
             </Link>
             {referralUrl ? (
@@ -49,7 +49,7 @@ export async function Footer() {
             ) : null}
           </div>
         </div>
-        <p className="border-t border-zinc-800 pt-6 text-xs leading-relaxed text-zinc-500">
+        <p className="border-t border-white/10 pt-6 text-xs leading-relaxed text-zinc-500">
           {t("disclaimer")}
         </p>
       </div>

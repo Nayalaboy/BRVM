@@ -59,7 +59,7 @@ export default async function ScreenerPage() {
             <form action={activateDemoPremium}>
               <button
                 type="submit"
-                className="mt-1 rounded-full bg-brand-800 px-5 py-2 text-sm font-semibold text-white hover:bg-brand-900"
+                className="mt-1 bg-brand-700 px-5 py-2 text-sm font-semibold text-white transition hover:bg-brand-800"
               >
                 {t("activate")}
               </button>
