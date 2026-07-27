@@ -80,7 +80,7 @@ export default async function HomePage() {
         {nav.map(([code, href, label]) => (
           <Link key={code} href={href} className="group bg-white p-3 hover:bg-brand-500">
             <span className="block font-mono text-[10px] font-black text-brand-600 group-hover:text-black">{code}</span>
-            <span className="mt-1 block text-xs font-bold text-zinc-800">{label}</span>
+            <span className="mt-1 block text-xs font-bold text-zinc-800 group-hover:text-black">{label}</span>
           </Link>
         ))}
       </div>

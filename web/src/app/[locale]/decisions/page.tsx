@@ -50,7 +50,7 @@ export default async function DecisionsPage({
             <option key={company.ticker} value={company.ticker}>{company.ticker} — {company.name}</option>
           ))}
         </select>
-        <button className="bg-black px-5 py-2 text-xs font-black uppercase text-white hover:bg-brand-600 hover:text-black">
+        <button className="bg-black px-5 py-2 text-xs font-black uppercase text-white hover:bg-brand-500 hover:text-black">
           {fr ? "Filtrer" : "Filter"}
         </button>
       </form>

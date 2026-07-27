@@ -15,6 +15,8 @@ export const routing = defineRouting({
     },
     "/verifier": { fr: "/verifier", en: "/verify" },
     "/screener": "/screener",
+    "/liste": { fr: "/liste", en: "/watchlist" },
+    "/recap": "/recap",
     "/operations": { fr: "/operations", en: "/ipos" },
     "/lexique": { fr: "/lexique", en: "/glossary" },
     "/recap/[date]": "/recap/[date]",

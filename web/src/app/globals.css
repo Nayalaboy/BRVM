@@ -2,27 +2,32 @@
 @plugin "@tailwindcss/typography";
 
 @theme {
-  --color-brand-50: #fff4e8;
-  --color-brand-100: #ffe3c2;
-  --color-brand-200: #ffc982;
-  --color-brand-300: #ffad45;
-  --color-brand-400: #ff941a;
-  --color-brand-500: #f47b00;
-  --color-brand-600: #d76500;
-  --color-brand-700: #aa4c00;
-  --color-brand-800: #783500;
-  --color-brand-900: #451d00;
+  /* Brand: Bloomberg-terminal amber — black chrome + golden amber accents.
+     500 is the signature amber (carries black text); 600+ are deepened so
+     small amber text stays AA-readable on white panels. */
+  --color-brand-50: #fffbeb;
+  --color-brand-100: #fef3c7;
+  --color-brand-200: #fde68a;
+  --color-brand-300: #fcd34d;
+  --color-brand-400: #fbbf24;
+  --color-brand-500: #f59e0b;
+  --color-brand-600: #b45309;
+  --color-brand-700: #92400e;
+  --color-brand-800: #78350f;
+  --color-brand-900: #451a03;
 
-  --color-accent-50: #eef7ff;
-  --color-accent-100: #d9edff;
-  --color-accent-200: #bce0ff;
-  --color-accent-300: #8acbff;
-  --color-accent-400: #51afff;
-  --color-accent-500: #238eea;
-  --color-accent-600: #126fc7;
-  --color-accent-700: #1259a1;
-  --color-accent-800: #154c85;
-  --color-accent-900: #183f6e;
+  /* Accent mirrors the brand amber so Premium surfaces share the same
+     terminal identity. */
+  --color-accent-50: #fffbeb;
+  --color-accent-100: #fef3c7;
+  --color-accent-200: #fde68a;
+  --color-accent-300: #fcd34d;
+  --color-accent-400: #fbbf24;
+  --color-accent-500: #f59e0b;
+  --color-accent-600: #b45309;
+  --color-accent-700: #92400e;
+  --color-accent-800: #78350f;
+  --color-accent-900: #451a03;
 
   --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
     "Helvetica Neue", Arial, sans-serif;
@@ -43,12 +48,12 @@ body {
 }
 
 ::selection {
-  background: #f47b00;
-  color: #fff;
+  background: #f59e0b;
+  color: #000;
 }
 
 :focus-visible {
-  outline: 2px solid #f47b00;
+  outline: 2px solid #b45309;
   outline-offset: 2px;
 }
 

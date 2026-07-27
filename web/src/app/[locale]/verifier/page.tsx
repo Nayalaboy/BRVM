@@ -31,19 +31,20 @@ export default async function VerifierPage({
     withdrawn: t("statusWithdrawn"),
   };
   const statusClass: Record<string, string> = {
-    active: "bg-brand-100 text-brand-800",
+    active: "bg-emerald-100 text-emerald-800",
     suspended: "bg-amber-100 text-amber-800",
     withdrawn: "bg-red-100 text-red-800",
   };
 
   return (
     <div className="mx-auto max-w-3xl space-y-8">
-      <div className="space-y-2">
-        <h1 className="text-3xl font-bold tracking-tight text-slate-900">{t("title")}</h1>
-        <p className="max-w-2xl text-slate-600">{t("subtitle")}</p>
-      </div>
+      <header className="border-b-4 border-black pb-6">
+        <p className="terminal-kicker text-brand-600">SGI / CREPMF</p>
+        <h1 className="mt-2 text-4xl font-black uppercase tracking-tight text-black sm:text-5xl">{t("title")}</h1>
+        <p className="mt-3 max-w-2xl text-sm leading-relaxed text-zinc-600">{t("subtitle")}</p>
+      </header>
 
-      <form className="grid gap-3 sm:grid-cols-[1fr_180px_auto]" method="get">
+      <form className="grid gap-3 border border-zinc-300 bg-white p-4 sm:grid-cols-[1fr_180px_auto]" method="get">
         <input
           type="search"
           name="q"
@@ -52,12 +53,12 @@ export default async function VerifierPage({
           required
           placeholder={t("placeholder")}
           aria-label={t("placeholder")}
-          className="min-w-0 flex-1 rounded-full border border-slate-300 px-5 py-2.5 text-sm text-slate-900 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+          className="min-w-0 flex-1 border border-zinc-400 bg-zinc-50 px-4 py-2.5 text-sm text-black focus:border-brand-500 focus:outline-none"
         />
         <select
           name="country"
           defaultValue={country ?? ""}
-          className="rounded-full border border-slate-300 px-4 py-2.5 text-sm"
+          className="border border-zinc-400 bg-zinc-50 px-4 py-2.5 text-sm"
         >
           <option value="">{locale === "fr" ? "Tous les pays" : "All countries"}</option>
           {["Bénin", "Burkina Faso", "Côte d'Ivoire", "Guinée-Bissau", "Mali", "Niger", "Sénégal", "Togo"].map((value) => (
@@ -66,7 +67,7 @@ export default async function VerifierPage({
         </select>
         <button
           type="submit"
-          className="rounded-full bg-brand-800 px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-900"
+          className="bg-black px-6 py-2.5 text-xs font-black uppercase text-white hover:bg-brand-500 hover:text-black"
         >
           {t("search")}
         </button>
@@ -79,10 +80,10 @@ export default async function VerifierPage({
           <p className="text-sm font-medium text-slate-700">
             {t("found", { count: result.results.length })}
           </p>
-          <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
+          <div className="overflow-x-auto border border-zinc-300 bg-white shadow-[3px_3px_0_#111]">
             <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-slate-200 text-left text-xs uppercase tracking-wide text-slate-500">
+              <thead className="bg-black font-mono text-[10px] uppercase tracking-wide text-zinc-300">
+                <tr className="text-left">
                   <th className="px-4 py-3 font-medium">{t("colName")}</th>
                   <th className="px-4 py-3 font-medium">{t("colType")}</th>
                   <th className="px-4 py-3 font-medium">{t("colCountry")}</th>
@@ -100,7 +101,7 @@ export default async function VerifierPage({
                     <td className="px-4 py-3 text-slate-600">{r.country ?? "—"}</td>
                     <td className="px-4 py-3">
                       <span
-                        className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
+                        className={`px-2 py-0.5 font-mono text-[10px] font-bold uppercase ${
                           statusClass[r.status] ?? "bg-slate-100 text-slate-600"
                         }`}
                       >

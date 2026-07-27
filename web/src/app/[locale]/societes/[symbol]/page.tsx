@@ -23,18 +23,39 @@ export async function generateMetadata({
   };
 }
 
+const RANGES = [
+  { key: "1m", limit: 23, fr: "1 M", en: "1M" },
+  { key: "6m", limit: 130, fr: "6 M", en: "6M" },
+  { key: "1y", limit: 260, fr: "1 A", en: "1Y" },
+  { key: "max", limit: 2000, fr: "Max", en: "Max" },
+] as const;
+type RangeKey = (typeof RANGES)[number]["key"];
+
 export default async function CompanyPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ symbol: string; locale: string }>;
+  searchParams: Promise<{ range?: string }>;
 }) {
   const { symbol } = await params;
+  const { range: rangeParam } = await searchParams;
   const t = await getTranslations("company");
   const tDiv = await getTranslations("dividends");
   const locale = await getLocale();
 
-  const [company, quotes] = await Promise.all([getCompany(symbol), getQuotes(symbol)]);
+  const chartRange: RangeKey = RANGES.some((r) => r.key === rangeParam) ? (rangeParam as RangeKey) : "1y";
+  const limit = RANGES.find((r) => r.key === chartRange)!.limit;
+  const [company, quotes] = await Promise.all([getCompany(symbol), getQuotes(symbol, limit)]);
   if (!company) notFound();
+
+  const chartPoints = quotes.filter((q) => q.close !== null);
+  const rangeFirst = chartPoints[0]?.close ?? null;
+  const rangeLast = chartPoints[chartPoints.length - 1]?.close ?? null;
+  const rangeChange = rangeFirst && rangeLast ? rangeLast / rangeFirst - 1 : null;
+  const exDates = company.dividends
+    .map((d) => d.exDate)
+    .filter((d): d is string => d !== null);
 
   const statusLabel: Record<string, string> = {
     proposed: tDiv("statusProposed"),
@@ -73,10 +94,10 @@ export default async function CompanyPage({
       <div className="space-y-3">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="flex flex-wrap items-center gap-3">
-            <span className="rounded bg-brand-700 px-2 py-1 font-mono text-sm font-bold text-white">
+            <span className="bg-brand-500 px-2 py-1 font-mono text-sm font-black text-black">
               {company.ticker}
             </span>
-            <h1 className="text-3xl font-bold tracking-tight text-slate-900">{company.name}</h1>
+            <h1 className="text-3xl font-black tracking-tight text-black">{company.name}</h1>
           </div>
           <WatchlistButton ticker={company.ticker} locale={locale} />
         </div>
@@ -91,18 +112,49 @@ export default async function CompanyPage({
         <DataTrust date={company.lastQuoteDate} locale={locale} source={company.source} />
       </div>
 
-      {quotes.length >= 2 ? (
-        <section className="rounded-xl border border-slate-200 bg-white p-4">
-          <PriceChart quotes={quotes} />
+      {chartPoints.length >= 2 ? (
+        <section className="border border-zinc-300 bg-white shadow-[3px_3px_0_#111]">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-zinc-300 bg-zinc-100 px-4 py-2">
+            <div className="flex items-center gap-3">
+              <p className="terminal-kicker text-black">
+                {locale === "fr" ? "Cours de clôture" : "Closing price"}
+              </p>
+              {rangeChange != null ? (
+                <span
+                  className={`tabular font-mono text-xs font-black ${rangeChange >= 0 ? "text-emerald-700" : "text-red-600"}`}
+                >
+                  {rangeChange >= 0 ? "+" : ""}
+                  {formatPercent(rangeChange)}
+                </span>
+              ) : null}
+            </div>
+            <div className="flex" role="group" aria-label={locale === "fr" ? "Période" : "Range"}>
+              {RANGES.map((r) => (
+                <a
+                  key={r.key}
+                  href={`?range=${r.key}`}
+                  aria-current={r.key === chartRange ? "true" : undefined}
+                  className={`border border-l-0 border-zinc-300 px-3 py-1 font-mono text-[10px] font-black uppercase first:border-l ${
+                    r.key === chartRange ? "bg-black text-brand-400" : "bg-white text-zinc-600 hover:bg-zinc-100"
+                  }`}
+                >
+                  {locale === "fr" ? r.fr : r.en}
+                </a>
+              ))}
+            </div>
+          </div>
+          <div className="p-4">
+            <PriceChart quotes={quotes} exDates={exDates} locale={locale} />
+          </div>
         </section>
       ) : null}
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-px border border-zinc-300 bg-zinc-300 sm:grid-cols-2 lg:grid-cols-3">
         {stats.map((s) => (
-          <div key={s.label} className="rounded-xl border border-slate-200 bg-white p-4">
-            <p className="text-xs font-medium uppercase tracking-wide text-slate-500">{s.label}</p>
-            <p className="tabular mt-1 text-lg font-semibold text-slate-900">{s.value}</p>
-            {s.hint ? <p className="text-xs text-slate-400">{s.hint}</p> : null}
+          <div key={s.label} className="bg-white p-4">
+            <p className="terminal-kicker text-zinc-500">{s.label}</p>
+            <p className="tabular mt-1 font-mono text-lg font-bold text-black">{s.value}</p>
+            {s.hint ? <p className="font-mono text-xs text-zinc-400">{s.hint}</p> : null}
           </div>
         ))}
         <Stat label={locale === "fr" ? "Capitalisation" : "Market capitalization"} value={company.marketCap != null ? formatCompactFCFA(company.marketCap) : "—"} />
@@ -114,24 +166,24 @@ export default async function CompanyPage({
       </div>
 
       <section className="space-y-3">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <h2 className="text-lg font-semibold text-slate-900">{t("dividendHistory")}</h2>
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b-4 border-black pb-2">
+          <h2 className="text-lg font-black uppercase tracking-tight text-black">{t("dividendHistory")}</h2>
           {company.dividends.length > 0 ? (
             <a
               href={`/api/dividends/ics?ticker=${company.ticker}`}
-              className="text-sm font-medium text-brand-700 hover:underline"
+              className="font-mono text-[10px] font-bold uppercase text-brand-600 hover:underline"
             >
-              {tDiv("exportIcs")}
+              {tDiv("exportIcs")} →
             </a>
           ) : null}
         </div>
         {company.dividends.length === 0 ? (
-          <p className="text-sm text-slate-500">{tDiv("empty")}</p>
+          <p className="text-sm text-zinc-500">{tDiv("empty")}</p>
         ) : (
-          <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
+          <div className="overflow-x-auto border border-zinc-300 bg-white">
             <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-slate-200 text-left text-xs uppercase tracking-wide text-slate-500">
+              <thead className="bg-black font-mono text-[10px] uppercase tracking-wide text-zinc-300">
+                <tr className="text-left">
                   <th className="px-4 py-3 font-medium">{t("colFiscalYear")}</th>
                   <th className="px-4 py-3 text-right font-medium">{t("colAmount")}</th>
                   <th className="px-4 py-3 text-right font-medium">{t("colGrowth")}</th>
@@ -158,7 +210,7 @@ export default async function CompanyPage({
                           growth === null
                             ? "text-slate-400"
                             : growth >= 0
-                              ? "text-brand-700"
+                              ? "text-emerald-700"
                               : "text-red-600"
                         }`}
                       >
@@ -180,15 +232,15 @@ export default async function CompanyPage({
 
       {company.events.length > 0 ? (
         <section className="space-y-3">
-          <div className="flex items-center justify-between gap-3">
-            <h2 className="text-lg font-semibold text-slate-900">
+          <div className="flex items-center justify-between gap-3 border-b-4 border-black pb-2">
+            <h2 className="text-lg font-black uppercase tracking-tight text-black">
               {locale === "fr" ? "Décisions publiques récentes" : "Recent public decisions"}
             </h2>
-            <a href={`/decisions?ticker=${company.ticker}`} className="text-xs font-bold text-brand-700 underline">
-              {locale === "fr" ? "Tout voir" : "View all"}
+            <a href={`/decisions?ticker=${company.ticker}`} className="font-mono text-[10px] font-bold uppercase text-brand-600 hover:underline">
+              {locale === "fr" ? "Tout voir" : "View all"} →
             </a>
           </div>
-          <div className="divide-y divide-slate-200 border-y border-slate-200">
+          <div className="divide-y divide-zinc-200 border-y border-zinc-300">
             {company.events.map((event) => (
               <article key={event.id} className="grid gap-2 py-4 sm:grid-cols-[130px_1fr]">
                 <div className="font-mono text-xs text-slate-500">
@@ -211,12 +263,12 @@ export default async function CompanyPage({
 
       {company.peers.length > 0 ? (
         <section className="space-y-3">
-          <h2 className="text-lg font-semibold text-slate-900">
+          <h2 className="border-b-4 border-black pb-2 text-lg font-black uppercase tracking-tight text-black">
             {locale === "fr" ? `Comparaison · ${company.sector}` : `Peer comparison · ${company.sector}`}
           </h2>
-          <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
+          <div className="overflow-x-auto border border-zinc-300 bg-white">
             <table className="w-full text-sm">
-              <thead><tr className="border-b border-slate-200 text-left text-xs uppercase tracking-wide text-slate-500">
+              <thead className="bg-black font-mono text-[10px] uppercase tracking-wide text-zinc-300"><tr className="text-left">
                 <th className="px-4 py-3">{locale === "fr" ? "Société" : "Company"}</th>
                 <th className="px-4 py-3 text-right">{locale === "fr" ? "Cours" : "Price"}</th>
                 <th className="px-4 py-3 text-right">{locale === "fr" ? "Rendement" : "Yield"}</th>
@@ -242,9 +294,9 @@ export default async function CompanyPage({
 
 function Stat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-4">
-      <p className="text-xs font-medium uppercase tracking-wide text-slate-500">{label}</p>
-      <p className="tabular mt-1 text-lg font-semibold text-slate-900">{value}</p>
+    <div className="bg-white p-4">
+      <p className="terminal-kicker text-zinc-500">{label}</p>
+      <p className="tabular mt-1 font-mono text-lg font-bold text-black">{value}</p>
     </div>
   );
 }

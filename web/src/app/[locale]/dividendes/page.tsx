@@ -13,8 +13,8 @@ export async function generateMetadata() {
 
 const STATUS_CLASS: Record<string, string> = {
   proposed: "bg-amber-100 text-amber-800",
-  announced: "bg-brand-100 text-brand-800",
-  approved: "bg-brand-100 text-brand-800",
+  announced: "bg-emerald-100 text-emerald-800",
+  approved: "bg-emerald-100 text-emerald-800",
   paid: "bg-slate-100 text-slate-600",
 };
 
@@ -30,14 +30,14 @@ async function DividendTable({ rows }: { rows: DividendRow[] }) {
   };
 
   if (rows.length === 0) {
-    return <p className="text-sm text-slate-500">{t("empty")}</p>;
+    return <p className="text-sm text-zinc-500">{t("empty")}</p>;
   }
 
   return (
-    <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
+    <div className="overflow-x-auto border border-zinc-300 bg-white">
       <table className="w-full text-sm">
-        <thead>
-          <tr className="border-b border-slate-200 text-left text-xs uppercase tracking-wide text-slate-500">
+        <thead className="bg-black font-mono text-[10px] uppercase tracking-wide text-zinc-300">
+          <tr className="text-left">
             <th className="px-4 py-3 font-medium">{t("colCompany")}</th>
             <th className="px-4 py-3 font-medium">{t("colFiscalYear")}</th>
             <th className="px-4 py-3 text-right font-medium">{t("colAmount")}</th>
@@ -51,7 +51,7 @@ async function DividendTable({ rows }: { rows: DividendRow[] }) {
           {rows.map((d) => (
             <tr
               key={`${d.ticker}-${d.fiscalYear}-${d.exDate}`}
-              className="border-b border-slate-100 last:border-0"
+              className="border-b border-zinc-200 last:border-0 hover:bg-brand-50"
             >
               <td className="px-4 py-3">
                 <Link
@@ -72,7 +72,7 @@ async function DividendTable({ rows }: { rows: DividendRow[] }) {
               <td className="px-4 py-3 text-slate-600">{formatDate(d.paymentDate, locale)}</td>
               <td className="px-4 py-3">
                 <span
-                  className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
+                  className={`px-2 py-0.5 font-mono text-[10px] font-bold uppercase ${
                     STATUS_CLASS[d.status] ?? "bg-slate-100 text-slate-600"
                   }`}
                 >
@@ -116,48 +116,49 @@ export default async function DividendsPage({
 
   return (
     <div className="space-y-10">
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div className="space-y-2">
-          <h1 className="text-3xl font-bold tracking-tight text-slate-900">{t("title")}</h1>
-          <p className="max-w-2xl text-slate-600">{t("subtitle")}</p>
+      <div className="flex flex-wrap items-end justify-between gap-4 border-b-4 border-black pb-6">
+        <div>
+          <p className="terminal-kicker text-brand-600">DVD / BRVM</p>
+          <h1 className="mt-2 text-4xl font-black uppercase tracking-tight text-black sm:text-5xl">{t("title")}</h1>
+          <p className="mt-3 max-w-2xl text-sm leading-relaxed text-zinc-600">{t("subtitle")}</p>
         </div>
         <a
           href="/api/dividends/ics"
-          className="rounded-full border border-brand-200 bg-white px-4 py-2 text-sm font-semibold text-brand-800 transition hover:border-brand-300 hover:bg-brand-50"
+          className="border border-zinc-400 bg-white px-4 py-2 text-xs font-black uppercase text-black hover:border-brand-500 hover:bg-brand-50"
         >
-          {t("exportIcs")}
+          {t("exportIcs")} →
         </a>
       </div>
 
       <DataTrust date={latestPriceDate} locale={locale} source="BRVM" />
 
-      <form method="get" className="grid gap-3 rounded-xl border border-slate-200 bg-white p-4 sm:grid-cols-2 lg:grid-cols-5">
-        <input name="q" defaultValue={filters.q} placeholder={locale === "fr" ? "Société ou symbole" : "Company or ticker"} className="rounded-lg border border-slate-300 px-3 py-2 text-sm" />
-        <select name="country" defaultValue={filters.country ?? ""} className="rounded-lg border border-slate-300 px-3 py-2 text-sm">
+      <form method="get" className="grid gap-3 border border-zinc-300 bg-white p-4 sm:grid-cols-2 lg:grid-cols-5">
+        <input name="q" defaultValue={filters.q} placeholder={locale === "fr" ? "Société ou symbole" : "Company or ticker"} className="border border-zinc-400 bg-zinc-50 px-3 py-2 text-sm" />
+        <select name="country" defaultValue={filters.country ?? ""} className="border border-zinc-400 bg-zinc-50 px-3 py-2 text-sm">
           <option value="">{locale === "fr" ? "Tous les pays" : "All countries"}</option>
           {countries.map((value) => <option key={value} value={value}>{value}</option>)}
         </select>
-        <select name="sector" defaultValue={filters.sector ?? ""} className="rounded-lg border border-slate-300 px-3 py-2 text-sm">
+        <select name="sector" defaultValue={filters.sector ?? ""} className="border border-zinc-400 bg-zinc-50 px-3 py-2 text-sm">
           <option value="">{locale === "fr" ? "Tous les secteurs" : "All sectors"}</option>
           {sectors.map((value) => <option key={value} value={value}>{value}</option>)}
         </select>
-        <input name="minYield" type="number" min="0" step="0.1" defaultValue={filters.minYield} placeholder={locale === "fr" ? "Rendement min. %" : "Min. yield %"} className="rounded-lg border border-slate-300 px-3 py-2 text-sm" />
-        <button className="rounded-lg bg-brand-800 px-4 py-2 text-sm font-semibold text-white">{locale === "fr" ? "Filtrer" : "Filter"}</button>
+        <input name="minYield" type="number" min="0" step="0.1" defaultValue={filters.minYield} placeholder={locale === "fr" ? "Rendement min. %" : "Min. yield %"} className="border border-zinc-400 bg-zinc-50 px-3 py-2 text-sm" />
+        <button className="bg-black px-4 py-2 text-xs font-black uppercase text-white hover:bg-brand-500 hover:text-black">{locale === "fr" ? "Filtrer" : "Filter"}</button>
       </form>
 
-      <p className="text-xs text-slate-500">
+      <p className="text-xs text-zinc-500">
         {locale === "fr"
           ? "Le rendement utilise le dernier cours disponible à la date indiquée ci-dessus; il peut être trompeur pour une valeur peu liquide."
           : "Yield uses the latest available price shown above and may be misleading for an illiquid security."}
       </p>
 
       <section className="space-y-3">
-        <h2 className="text-lg font-semibold text-slate-900">{t("upcoming")}</h2>
+        <h2 className="border-b-4 border-black pb-2 text-lg font-black uppercase tracking-tight text-black">{t("upcoming")}</h2>
         <DividendTable rows={upcoming} />
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-lg font-semibold text-slate-900">{t("past")}</h2>
+        <h2 className="border-b-4 border-black pb-2 text-lg font-black uppercase tracking-tight text-black">{t("past")}</h2>
         <DividendTable rows={past} />
       </section>
     </div>
