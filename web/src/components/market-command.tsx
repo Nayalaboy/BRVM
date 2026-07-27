@@ -14,15 +14,30 @@ const DESTINATIONS = [
   { code: "SGI", fr: "Vérifier un agrément", en: "Verify a licence", href: "/verifier" },
 ] as const;
 
-export function MarketCommand() {
+export interface CommandCompany {
+  ticker: string;
+  name: string;
+}
+
+export function MarketCommand({ companies = [] }: { companies?: CommandCompany[] }) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const input = useRef<HTMLInputElement>(null);
   const locale = useLocale();
   const router = useRouter();
+  const q = query.trim().toLowerCase();
   const filtered = DESTINATIONS.filter((item) =>
-    `${item.code} ${item.fr} ${item.en}`.toLowerCase().includes(query.toLowerCase()),
+    `${item.code} ${item.fr} ${item.en}`.toLowerCase().includes(q),
   );
+  // Ticker prefix matches first (terminal habit: type "SG" → SGBC), then names.
+  const matchedCompanies = q
+    ? [
+        ...companies.filter((c) => c.ticker.toLowerCase().startsWith(q)),
+        ...companies.filter(
+          (c) => !c.ticker.toLowerCase().startsWith(q) && c.name.toLowerCase().includes(q),
+        ),
+      ].slice(0, 8)
+    : [];
 
   useEffect(() => {
     function onKey(event: KeyboardEvent) {
@@ -48,6 +63,12 @@ export function MarketCommand() {
     setOpen(false);
     setQuery("");
     router.push(href);
+  }
+
+  function goCompany(ticker: string) {
+    setOpen(false);
+    setQuery("");
+    router.push({ pathname: "/societes/[symbol]", params: { symbol: ticker } });
   }
 
   return (
@@ -78,13 +99,37 @@ export function MarketCommand() {
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
                 onKeyDown={(event) => {
-                  if (event.key === "Enter" && filtered[0]) go(filtered[0].href);
+                  if (event.key !== "Enter") return;
+                  if (matchedCompanies[0]) goCompany(matchedCompanies[0].ticker);
+                  else if (filtered[0]) go(filtered[0].href);
                 }}
-                placeholder={locale === "fr" ? "Code ou fonction…" : "Code or function…"}
+                placeholder={locale === "fr" ? "Ticker, société ou fonction…" : "Ticker, company or function…"}
                 className="w-full bg-black px-4 py-3 font-mono text-sm text-white outline-none placeholder:text-zinc-600"
               />
             </div>
             <ul className="max-h-80 overflow-y-auto p-2">
+              {matchedCompanies.length > 0 ? (
+                <li className="px-3 pb-1 pt-2 font-mono text-[10px] font-black uppercase tracking-widest text-zinc-500">
+                  {locale === "fr" ? "Sociétés" : "Companies"}
+                </li>
+              ) : null}
+              {matchedCompanies.map((company) => (
+                <li key={company.ticker}>
+                  <button
+                    type="button"
+                    onClick={() => goCompany(company.ticker)}
+                    className="group flex w-full items-center gap-4 px-3 py-3 text-left text-sm text-zinc-200 hover:bg-brand-500 hover:text-black"
+                  >
+                    <span className="w-14 font-mono font-black text-brand-400 group-hover:text-black">{company.ticker}</span>
+                    <span className="truncate">{company.name}</span>
+                  </button>
+                </li>
+              ))}
+              {matchedCompanies.length > 0 && filtered.length > 0 ? (
+                <li className="px-3 pb-1 pt-2 font-mono text-[10px] font-black uppercase tracking-widest text-zinc-500">
+                  {locale === "fr" ? "Fonctions" : "Functions"}
+                </li>
+              ) : null}
               {filtered.map((item) => (
                 <li key={item.code}>
                   <button
@@ -92,11 +137,16 @@ export function MarketCommand() {
                     onClick={() => go(item.href)}
                     className="flex w-full items-center gap-4 px-3 py-3 text-left text-sm text-zinc-200 hover:bg-brand-500 hover:text-black"
                   >
-                    <span className="w-10 font-mono font-black">{item.code}</span>
+                    <span className="w-14 font-mono font-black">{item.code}</span>
                     <span>{locale === "fr" ? item.fr : item.en}</span>
                   </button>
                 </li>
               ))}
+              {matchedCompanies.length === 0 && filtered.length === 0 ? (
+                <li className="px-3 py-4 text-sm text-zinc-500">
+                  {locale === "fr" ? "Aucun résultat." : "No results."}
+                </li>
+              ) : null}
             </ul>
             <p className="border-t border-zinc-800 px-4 py-2 text-[10px] uppercase tracking-wider text-zinc-500">
               ↑↓ {locale === "fr" ? "naviguer" : "navigate"} · Enter {locale === "fr" ? "ouvrir" : "open"} · Esc {locale === "fr" ? "fermer" : "close"}

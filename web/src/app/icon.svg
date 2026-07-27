@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <rect width="64" height="64" fill="#f59e0b"/>
+  <text x="32" y="47" font-family="Menlo, Consolas, 'DejaVu Sans Mono', monospace" font-size="42" font-weight="900" fill="#000" text-anchor="middle">A</text>
+  <rect x="0" y="58" width="64" height="6" fill="#000"/>
+</svg>

@@ -15,17 +15,18 @@ export default async function LexiconPage() {
 
   return (
     <div className="mx-auto max-w-3xl space-y-10">
-      <div className="space-y-2">
-        <h1 className="text-3xl font-bold tracking-tight text-slate-900">{t("title")}</h1>
-        <p className="text-slate-600">{t("subtitle")}</p>
-      </div>
+      <header className="border-b-4 border-black pb-6">
+        <p className="terminal-kicker text-brand-600">GLO / BRVM</p>
+        <h1 className="mt-2 text-4xl font-black uppercase tracking-tight text-black sm:text-5xl">{t("title")}</h1>
+        <p className="mt-3 text-sm leading-relaxed text-zinc-600">{t("subtitle")}</p>
+      </header>
 
       <nav className="flex flex-wrap gap-2">
         {LEXICON.map((e) => (
           <a
             key={e.slug}
             href={`#${e.slug}`}
-            className="rounded-full border border-slate-200 bg-white px-3 py-1 text-sm text-slate-600 hover:border-brand-300 hover:text-brand-800"
+            className="border border-zinc-300 bg-white px-3 py-1 text-sm text-zinc-600 hover:border-brand-500 hover:bg-brand-50"
           >
             {e.term[locale]}
           </a>
@@ -44,7 +45,7 @@ export default async function LexiconPage() {
         ))}
       </div>
 
-      <div className="rounded-xl border border-brand-200 bg-brand-50 p-5 text-sm text-brand-900">
+      <div className="border-l-4 border-brand-500 bg-brand-50 p-5 text-sm text-brand-900">
         {t("verifierCta")}{" "}
         <Link href="/verifier" className="font-semibold underline">
           {t("verifierLink")}

@@ -1,5 +1,6 @@
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
+import { getCompanies } from "@/lib/api";
 import { isDemoPremium } from "@/lib/premium";
 import { LocaleSwitcher } from "./locale-switcher";
 import { MarketCommand } from "./market-command";
@@ -10,6 +11,8 @@ export async function Header() {
   const t = await getTranslations("nav");
   const premium = await isDemoPremium();
   const session = await auth();
+  // Cached (revalidate) list so ⌘K can search the whole cote by ticker/name.
+  const companies = await getCompanies().catch(() => []);
 
   const links = [
     { href: "/intelligence", label: t("intelligence") },
@@ -17,6 +20,7 @@ export async function Header() {
     { href: "/dividendes", label: t("dividends") },
     { href: "/societes", label: t("companies") },
     { href: "/screener", label: t("screener") },
+    { href: "/liste", label: t("watchlist") },
     { href: "/operations", label: t("operations") },
     { href: "/verifier", label: t("verifier") },
     { href: "/lexique", label: t("lexicon") },
@@ -31,7 +35,7 @@ export async function Header() {
               <span className="bg-brand-500 px-2 py-1 text-sm text-black">Aqlee</span>
               <span className="border border-zinc-700 px-2 py-1 text-sm text-white">Markets</span>
             </Link>
-            <MarketCommand />
+            <MarketCommand companies={companies.map((c) => ({ ticker: c.ticker, name: c.name }))} />
           </div>
           <div className="flex shrink-0 items-center gap-3">
             <span className="hidden font-mono text-[10px] uppercase tracking-widest text-zinc-500 sm:inline">

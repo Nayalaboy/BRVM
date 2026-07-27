@@ -309,13 +309,14 @@ export async function getMarketEvents(filters?: {
 export interface Quote {
   date: string;
   close: number | null;
+  volume: number | null;
 }
 
 export async function getQuotes(ticker: string, limit = 260): Promise<Quote[]> {
-  const rows = await get<{ date: string; close: number | null }[]>(
+  const rows = await get<{ date: string; close: number | null; volume: number | null }[]>(
     `/quotes/${encodeURIComponent(ticker.toUpperCase())}?limit=${limit}`,
   );
-  return rows.map((q) => ({ date: q.date, close: q.close }));
+  return rows.map((q) => ({ date: q.date, close: q.close, volume: q.volume }));
 }
 
 export interface Mover {
@@ -405,6 +406,36 @@ export interface Recap {
   nonTraded: string[];
   coveragePct: number;
   breadthRatio: number | null;
+}
+
+export interface RecapSummary {
+  date: string;
+  compositeValue: number | null;
+  compositeChangePct: number | null;
+  advancers: number | null;
+  decliners: number | null;
+  unchanged: number | null;
+}
+
+export async function getRecaps(limit = 90): Promise<RecapSummary[]> {
+  const rows = await get<
+    {
+      date: string;
+      composite_value: number | null;
+      composite_change_pct: number | null;
+      advancers: number | null;
+      decliners: number | null;
+      unchanged: number | null;
+    }[]
+  >(`/recaps?limit=${limit}`, 3600);
+  return rows.map((r) => ({
+    date: r.date,
+    compositeValue: r.composite_value,
+    compositeChangePct: r.composite_change_pct,
+    advancers: r.advancers,
+    decliners: r.decliners,
+    unchanged: r.unchanged,
+  }));
 }
 
 export async function getRecap(date: string): Promise<Recap | null> {

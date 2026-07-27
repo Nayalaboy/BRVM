@@ -433,6 +433,37 @@ def indices(request: Request, db: Session = Depends(get_db)):
     return etag_json(request, payload, max_age=30)
 
 
+@router.get("/recaps")
+def recap_index(
+    request: Request,
+    limit: int = Query(90, ge=1, le=500),
+    db: Session = Depends(get_db),
+):
+    """Published daily recaps, newest first, for the archive page and sitemap."""
+    rows = (
+        db.execute(
+            select(MarketRecap)
+            .where(MarketRecap.published.is_(True))
+            .order_by(MarketRecap.date.desc())
+            .limit(limit)
+        )
+        .scalars()
+        .all()
+    )
+    payload = [
+        {
+            "date": _iso(r.date),
+            "composite_value": _f(r.composite_value),
+            "composite_change_pct": _f(r.composite_change_pct),
+            "advancers": r.advancers,
+            "decliners": r.decliners,
+            "unchanged": r.unchanged,
+        }
+        for r in rows
+    ]
+    return etag_json(request, payload, max_age=3600)
+
+
 @router.get("/recap/{recap_date}")
 def recap(recap_date: date, request: Request, db: Session = Depends(get_db)):
     r = db.get(MarketRecap, recap_date)

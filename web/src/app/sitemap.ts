@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next";
-import { getCompanies } from "@/lib/api";
+import { getCompanies, getRecaps } from "@/lib/api";
 
 /**
  * Sitemap with both locales. French is served at the root (no prefix), English
@@ -18,6 +18,7 @@ const PAGES: [string, string][] = [
   ["/newsletter", "/en/newsletter"],
   ["/intelligence", "/en/intelligence"],
   ["/decisions", "/en/decisions"],
+  ["/recap", "/en/recap"],
   ["/methodologie", "/en/methodology"],
   ["/statut", "/en/status"],
   ["/conditions", "/en/terms"],
@@ -49,6 +50,20 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }
   } catch {
     // API unavailable at build/render — ship the static pages regardless.
+  }
+
+  try {
+    const recaps = await getRecaps(60);
+    for (const r of recaps) {
+      entries.push({
+        url: `${BASE}/recap/${r.date}`,
+        lastModified: now,
+        changeFrequency: "yearly",
+        priority: 0.4,
+      });
+    }
+  } catch {
+    // Same fallback as above.
   }
 
   return entries;

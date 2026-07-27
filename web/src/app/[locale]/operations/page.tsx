@@ -59,14 +59,14 @@ export default async function OperationsPage() {
       [labels.sgiLead, op.sgiLead ?? "—"],
     ];
     return (
-      <article key={op.id} className="space-y-4 rounded-xl border border-slate-200 bg-white p-6">
+      <article key={op.id} className="terminal-panel space-y-4 p-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h2 className="text-lg font-semibold text-slate-900">{op.title}</h2>
-            <p className="text-sm text-slate-500">{op.issuer}</p>
+            <h2 className="text-lg font-black uppercase tracking-tight text-black">{op.title}</h2>
+            <p className="text-sm text-zinc-500">{op.issuer}</p>
           </div>
           <span
-            className={`rounded-full px-3 py-1 text-xs font-semibold ${
+            className={`px-3 py-1 font-mono text-[10px] font-bold uppercase ${
               STATUS_CLASS[op.status] ?? "bg-slate-100 text-slate-600"
             }`}
           >
@@ -134,15 +134,16 @@ export default async function OperationsPage() {
 
   return (
     <div className="space-y-8">
-      <div className="space-y-2">
-        <h1 className="text-3xl font-bold tracking-tight text-slate-900">{t("title")}</h1>
-        <p className="max-w-2xl text-slate-600">{t("subtitle")}</p>
-      </div>
+      <header className="border-b-4 border-black pb-6">
+        <p className="terminal-kicker text-brand-600">IPO / CREPMF</p>
+        <h1 className="mt-2 text-4xl font-black uppercase tracking-tight text-black sm:text-5xl">{t("title")}</h1>
+        <p className="mt-3 max-w-2xl text-sm leading-relaxed text-zinc-600">{t("subtitle")}</p>
+      </header>
 
       {operations.length === 0 ? (
-        <div className="rounded-xl border border-slate-200 bg-white p-8 text-center">
-          <p className="font-medium text-slate-700">{t("emptyTitle")}</p>
-          <p className="mt-1 text-sm text-slate-500">{t("emptyBody")}</p>
+        <div className="border border-dashed border-zinc-300 bg-white p-8 text-center">
+          <p className="font-black uppercase text-black">{t("emptyTitle")}</p>
+          <p className="mt-1 text-sm text-zinc-500">{t("emptyBody")}</p>
         </div>
       ) : (
         <div className="space-y-6">{operations.map(card)}</div>

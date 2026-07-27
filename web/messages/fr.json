@@ -8,6 +8,7 @@
     "screener": "Screener",
     "intelligence": "Intelligence",
     "decisions": "Décisions publiques",
+    "watchlist": "Ma liste",
     "premiumDemo": "Premium (démo)",
     "openAccount": "Ouvrir un compte titres",
     "signIn": "Connexion",
@@ -37,6 +38,7 @@
     "terms": "Conditions d'utilisation",
     "privacy": "Politique de confidentialité",
     "methodology": "Méthodologie",
+    "recaps": "Récaps quotidiens",
     "dataStatus": "État des données",
     "referralNote": "Lien partenaire — aucune donnée personnelle n'est transmise."
   },
@@ -164,6 +166,29 @@
     "eligibility": "Conditions d'éligibilité",
     "notice": "Note d'information",
     "disclaimer": "Informations à titre indicatif. Reportez-vous toujours à la note d'information officielle visée par le CREPMF avant de souscrire."
+  },
+  "watchlist": {
+    "title": "Ma liste de suivi",
+    "subtitle": "Vos valeurs suivies, avec cours, rendement et prochain dividende. Stockée uniquement dans votre navigateur.",
+    "emptyTitle": "Votre liste est vide",
+    "emptyBody": "Ajoutez des valeurs avec le bouton ☆ sur une fiche société ou dans le fil intelligence.",
+    "browse": "Parcourir les sociétés",
+    "colCompany": "Société",
+    "colLastClose": "Dernier cours",
+    "colYield": "Rendement",
+    "colYtd": "YTD",
+    "colNextDividend": "Prochain détachement",
+    "remove": "Retirer",
+    "count": "{count, plural, one {# valeur suivie} other {# valeurs suivies}}"
+  },
+  "recapIndex": {
+    "title": "Récaps quotidiens",
+    "subtitle": "Chaque séance vérifiée, chiffre par chiffre, contre le Bulletin Officiel de la Cote (BOC). Publié uniquement si les contrôles qualité passent.",
+    "empty": "Les récaps quotidiens apparaîtront ici après la première clôture collectée.",
+    "colDate": "Séance",
+    "colComposite": "BRVM Composite",
+    "colChange": "Variation",
+    "colBreadth": "Hausses / Baisses / Stables"
   },
   "recap": {
     "title": "Récap du marché",

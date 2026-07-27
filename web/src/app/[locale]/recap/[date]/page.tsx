@@ -31,20 +31,21 @@ export default async function RecapPage({ params }: { params: Promise<{ date: st
 
   return (
     <div className="mx-auto max-w-3xl space-y-8">
-      <div className="space-y-2">
-        <h1 className="text-3xl font-bold tracking-tight text-slate-900">
+      <div className="space-y-3 border-b-4 border-black pb-6">
+        <p className="terminal-kicker text-brand-600">BOC / BRVM</p>
+        <h1 className="text-3xl font-black uppercase tracking-tight text-black sm:text-4xl">
           {t("title")} — {formatDate(recap.date, locale)}
         </h1>
         {/* Traceability: every figure sourced from the official BOC bulletin. */}
         <DataTrust date={recap.date} locale={locale} source="BOC" sourceUrl={recap.sourceUrl} />
       </div>
 
-      <section className="rounded-xl border border-slate-200 bg-white p-6">
-        <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
+      <section className="terminal-panel p-6">
+        <p className="terminal-kicker text-zinc-500">
           {t("composite")}
         </p>
         <div className="mt-1 flex items-baseline gap-3">
-          <span className="tabular text-3xl font-bold text-slate-900">
+          <span className="tabular font-mono text-3xl font-black text-black">
             {recap.compositeValue != null ? formatNumber(recap.compositeValue, 2) : "—"}
           </span>
           {recap.compositeChangePct != null ? (
@@ -56,8 +57,8 @@ export default async function RecapPage({ params }: { params: Promise<{ date: st
         </div>
       </section>
 
-      <section className="rounded-xl border border-slate-200 bg-white p-5">
-        <h2 className="font-semibold text-slate-900">
+      <section className="border border-zinc-300 bg-white p-5">
+        <h2 className="font-black uppercase text-black">
           {locale === "fr" ? "Lecture de la séance" : "Session overview"}
         </h2>
         <p className="mt-2 text-sm leading-relaxed text-slate-600">
@@ -73,19 +74,19 @@ export default async function RecapPage({ params }: { params: Promise<{ date: st
         ) : null}
       </section>
 
-      <section className="grid grid-cols-3 gap-4">
+      <section className="grid grid-cols-3 gap-px border border-zinc-300 bg-zinc-300">
         {breadth.map((b) => (
-          <div key={b.label} className="rounded-xl border border-slate-200 bg-white p-4 text-center">
-            <p className={`tabular text-2xl font-bold ${b.cls}`}>{b.value ?? "—"}</p>
-            <p className="mt-1 text-xs uppercase tracking-wide text-slate-500">{b.label}</p>
+          <div key={b.label} className="bg-white p-4 text-center">
+            <p className={`tabular font-mono text-2xl font-black ${b.cls}`}>{b.value ?? "—"}</p>
+            <p className="terminal-kicker mt-1 text-zinc-500">{b.label}</p>
           </div>
         ))}
       </section>
 
       <div className="grid gap-6 sm:grid-cols-2">
         <section className="space-y-2">
-          <h2 className="text-sm font-semibold text-slate-900">{t("topMovers")}</h2>
-          <ul className="divide-y divide-slate-100 rounded-xl border border-slate-200 bg-white">
+          <h2 className="border-b-2 border-black pb-1 text-sm font-black uppercase text-black">{t("topMovers")}</h2>
+          <ul className="divide-y divide-zinc-200 border border-zinc-300 bg-white">
             {recap.topMovers.map((m) => (
               <li key={m.ticker} className="flex items-center justify-between px-4 py-2 text-sm">
                 <Link
@@ -104,8 +105,8 @@ export default async function RecapPage({ params }: { params: Promise<{ date: st
         </section>
 
         <section className="space-y-2">
-          <h2 className="text-sm font-semibold text-slate-900">{t("mostActive")}</h2>
-          <ul className="divide-y divide-slate-100 rounded-xl border border-slate-200 bg-white">
+          <h2 className="border-b-2 border-black pb-1 text-sm font-black uppercase text-black">{t("mostActive")}</h2>
+          <ul className="divide-y divide-zinc-200 border border-zinc-300 bg-white">
             {recap.mostActive.map((m) => (
               <li key={m.ticker} className="flex items-center justify-between px-4 py-2 text-sm">
                 <Link

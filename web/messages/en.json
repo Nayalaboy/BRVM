@@ -8,6 +8,7 @@
     "screener": "Screener",
     "intelligence": "Intelligence",
     "decisions": "Public decisions",
+    "watchlist": "My watchlist",
     "premiumDemo": "Premium (demo)",
     "openAccount": "Open a brokerage account",
     "signIn": "Sign in",
@@ -37,6 +38,7 @@
     "terms": "Terms of Service",
     "privacy": "Privacy Policy",
     "methodology": "Methodology",
+    "recaps": "Daily recaps",
     "dataStatus": "Data status",
     "referralNote": "Partner link — no personal data is shared."
   },
@@ -164,6 +166,29 @@
     "eligibility": "Eligibility",
     "notice": "Information note",
     "disclaimer": "For information only. Always refer to the official CREPMF-approved information note before subscribing."
+  },
+  "watchlist": {
+    "title": "My watchlist",
+    "subtitle": "Your followed securities with price, yield and next dividend. Stored only in your browser.",
+    "emptyTitle": "Your watchlist is empty",
+    "emptyBody": "Add securities with the ☆ button on a company page or in the intelligence feed.",
+    "browse": "Browse companies",
+    "colCompany": "Company",
+    "colLastClose": "Last close",
+    "colYield": "Yield",
+    "colYtd": "YTD",
+    "colNextDividend": "Next ex-date",
+    "remove": "Remove",
+    "count": "{count, plural, one {# followed security} other {# followed securities}}"
+  },
+  "recapIndex": {
+    "title": "Daily recaps",
+    "subtitle": "Every session verified, figure by figure, against the official BOC bulletin. Published only when quality checks pass.",
+    "empty": "Daily recaps will appear here after the first collected close.",
+    "colDate": "Session",
+    "colComposite": "BRVM Composite",
+    "colChange": "Change",
+    "colBreadth": "Advancers / Decliners / Unchanged"
   },
   "recap": {
     "title": "Market recap",
