@@ -65,7 +65,7 @@ export default async function HomePage() {
           <div className="border-l-4 border-brand-500 pl-4">
             <p className="text-sm leading-relaxed text-zinc-700">{t("heroSubtitle")}</p>
             <div className="mt-4 flex flex-wrap gap-2">
-              <Link href="/screener" className="bg-black px-4 py-2 text-xs font-black uppercase text-white hover:bg-brand-600">
+              <Link href="/screener" className="bg-black px-4 py-2 text-xs font-black uppercase text-white hover:bg-brand-500 hover:text-black">
                 {locale === "fr" ? "Explorer la cote" : "Explore the market"} →
               </Link>
               <Link href="/dividendes" className="border border-black bg-white px-4 py-2 text-xs font-black uppercase text-black hover:bg-zinc-100">
@@ -78,9 +78,9 @@ export default async function HomePage() {
 
       <div className="grid grid-cols-3 gap-px border border-zinc-300 bg-zinc-300 sm:grid-cols-7">
         {nav.map(([code, href, label]) => (
-          <Link key={code} href={href} className="group bg-white p-3 hover:bg-brand-600">
-            <span className="block font-mono text-[10px] font-black text-brand-600 group-hover:text-brand-200">{code}</span>
-            <span className="mt-1 block text-xs font-bold text-zinc-800 group-hover:text-white">{label}</span>
+          <Link key={code} href={href} className="group bg-white p-3 hover:bg-brand-500">
+            <span className="block font-mono text-[10px] font-black text-brand-600 group-hover:text-black">{code}</span>
+            <span className="mt-1 block text-xs font-bold text-zinc-800 group-hover:text-black">{label}</span>
           </Link>
         ))}
       </div>

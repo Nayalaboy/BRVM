@@ -73,7 +73,7 @@ export function IntelligenceFeedView({
             type="button"
             onClick={() => setKind(value)}
             className={`px-3 py-1.5 font-mono text-[10px] font-black uppercase ${
-              kind === value ? "bg-brand-600 text-white" : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200"
+              kind === value ? "bg-brand-500 text-black" : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200"
             }`}
           >
             {label}

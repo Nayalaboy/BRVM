@@ -13,8 +13,8 @@ export async function generateMetadata() {
 
 const STATUS_CLASS: Record<string, string> = {
   proposed: "bg-amber-100 text-amber-800",
-  announced: "bg-brand-100 text-brand-800",
-  approved: "bg-brand-100 text-brand-800",
+  announced: "bg-emerald-100 text-emerald-800",
+  approved: "bg-emerald-100 text-emerald-800",
   paid: "bg-slate-100 text-slate-600",
 };
 

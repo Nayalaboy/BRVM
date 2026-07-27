@@ -2,31 +2,32 @@
 @plugin "@tailwindcss/typography";
 
 @theme {
-  /* Brand: deep cobalt blue — institutional, trustworthy, distinct from
-     Sikafinance orange and from the green/red/amber data semantics. */
-  --color-brand-50: #eff6ff;
-  --color-brand-100: #dbeafe;
-  --color-brand-200: #bfdbfe;
-  --color-brand-300: #93c5fd;
-  --color-brand-400: #60a5fa;
-  --color-brand-500: #3b82f6;
-  --color-brand-600: #2563eb;
-  --color-brand-700: #1d4ed8;
-  --color-brand-800: #1e40af;
-  --color-brand-900: #1e3a8a;
+  /* Brand: Bloomberg-terminal amber — black chrome + golden amber accents.
+     500 is the signature amber (carries black text); 600+ are deepened so
+     small amber text stays AA-readable on white panels. */
+  --color-brand-50: #fffbeb;
+  --color-brand-100: #fef3c7;
+  --color-brand-200: #fde68a;
+  --color-brand-300: #fcd34d;
+  --color-brand-400: #fbbf24;
+  --color-brand-500: #f59e0b;
+  --color-brand-600: #b45309;
+  --color-brand-700: #92400e;
+  --color-brand-800: #78350f;
+  --color-brand-900: #451a03;
 
-  /* Accent: violet — reserved for Premium/exclusive surfaces so they stand
-     apart from the cobalt brand. */
-  --color-accent-50: #f5f3ff;
-  --color-accent-100: #ede9fe;
-  --color-accent-200: #ddd6fe;
-  --color-accent-300: #c4b5fd;
-  --color-accent-400: #a78bfa;
-  --color-accent-500: #8b5cf6;
-  --color-accent-600: #7c3aed;
-  --color-accent-700: #6d28d9;
-  --color-accent-800: #5b21b6;
-  --color-accent-900: #4c1d95;
+  /* Accent mirrors the brand amber so Premium surfaces share the same
+     terminal identity. */
+  --color-accent-50: #fffbeb;
+  --color-accent-100: #fef3c7;
+  --color-accent-200: #fde68a;
+  --color-accent-300: #fcd34d;
+  --color-accent-400: #fbbf24;
+  --color-accent-500: #f59e0b;
+  --color-accent-600: #b45309;
+  --color-accent-700: #92400e;
+  --color-accent-800: #78350f;
+  --color-accent-900: #451a03;
 
   --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
     "Helvetica Neue", Arial, sans-serif;
@@ -47,12 +48,12 @@ body {
 }
 
 ::selection {
-  background: #2563eb;
-  color: #fff;
+  background: #f59e0b;
+  color: #000;
 }
 
 :focus-visible {
-  outline: 2px solid #2563eb;
+  outline: 2px solid #b45309;
   outline-offset: 2px;
 }
 

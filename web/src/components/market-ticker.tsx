@@ -22,10 +22,10 @@ export async function MarketTicker() {
   return (
     <div className="border-b border-zinc-700 bg-black text-white">
       <div className="mx-auto flex max-w-[1440px]">
-        <div className="z-10 flex shrink-0 items-center gap-2 whitespace-nowrap bg-brand-600 px-3 font-mono text-[10px] font-black uppercase text-white shadow-[8px_0_16px_rgba(0,0,0,0.65)]">
+        <div className="z-10 flex shrink-0 items-center gap-2 whitespace-nowrap bg-brand-500 px-3 font-mono text-[10px] font-black uppercase text-black shadow-[8px_0_16px_rgba(0,0,0,0.65)]">
           <span>{locale === "fr" ? "BRVM · DERNIÈRE CLÔTURE" : "BRVM · LAST CLOSE"}</span>
           {sessionDate ? (
-            <span className="border-l border-white/30 pl-2 font-bold">
+            <span className="border-l border-black/30 pl-2 font-bold">
               {formatDate(sessionDate, locale)}
             </span>
           ) : null}

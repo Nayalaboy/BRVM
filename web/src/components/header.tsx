@@ -28,7 +28,7 @@ export async function Header() {
         <div className="mx-auto flex h-14 w-full max-w-[1440px] items-center justify-between gap-4 px-4 sm:px-6">
           <div className="flex min-w-0 items-center gap-5">
             <Link href="/" className="flex shrink-0 items-center font-black uppercase tracking-tight">
-              <span className="bg-brand-600 px-2 py-1 text-sm text-white">Aqlee</span>
+              <span className="bg-brand-500 px-2 py-1 text-sm text-black">Aqlee</span>
               <span className="border border-zinc-700 px-2 py-1 text-sm text-white">Markets</span>
             </Link>
             <MarketCommand />
@@ -38,7 +38,7 @@ export async function Header() {
               BRVM / UEMOA
             </span>
             {premium ? (
-              <Link href="/screener" className="bg-brand-600 px-2 py-1 text-[10px] font-black uppercase text-white">
+              <Link href="/screener" className="bg-brand-500 px-2 py-1 text-[10px] font-black uppercase text-black">
                 {t("premiumDemo")}
               </Link>
             ) : null}
@@ -58,7 +58,7 @@ export async function Header() {
               <Link
                 key={l.href}
                 href={l.href}
-                className="border-r border-zinc-200 px-4 py-2 text-[11px] font-bold uppercase tracking-wide text-zinc-700 first:border-l hover:bg-brand-600 hover:text-white"
+                className="border-r border-zinc-200 px-4 py-2 text-[11px] font-bold uppercase tracking-wide text-zinc-700 first:border-l hover:bg-brand-500 hover:text-black"
               >
                 {l.label}
               </Link>

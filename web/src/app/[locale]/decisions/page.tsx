@@ -50,7 +50,7 @@ export default async function DecisionsPage({
             <option key={company.ticker} value={company.ticker}>{company.ticker} — {company.name}</option>
           ))}
         </select>
-        <button className="bg-black px-5 py-2 text-xs font-black uppercase text-white hover:bg-brand-600">
+        <button className="bg-black px-5 py-2 text-xs font-black uppercase text-white hover:bg-brand-500 hover:text-black">
           {fr ? "Filtrer" : "Filter"}
         </button>
       </form>
@@ -75,7 +75,7 @@ export default async function DecisionsPage({
                 {event.tickers.length > 0 ? (
                   <div className="mt-3 flex flex-wrap gap-2">
                     {event.tickers.map((ticker) => (
-                      <Link key={ticker} href={{ pathname: "/societes/[symbol]", params: { symbol: ticker } }} className="bg-zinc-100 px-2 py-1 font-mono text-xs font-bold hover:bg-brand-600 hover:text-white">
+                      <Link key={ticker} href={{ pathname: "/societes/[symbol]", params: { symbol: ticker } }} className="bg-zinc-100 px-2 py-1 font-mono text-xs font-bold hover:bg-brand-500">
                         {ticker}
                       </Link>
                     ))}

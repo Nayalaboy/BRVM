@@ -72,7 +72,7 @@ export function MarketCommand() {
         >
           <div className="w-full max-w-xl border-2 border-brand-500 bg-black shadow-2xl">
             <div className="flex items-center border-b border-zinc-700">
-              <span className="bg-brand-600 px-3 py-3 font-mono text-xs font-black text-white">GO</span>
+              <span className="bg-brand-500 px-3 py-3 font-mono text-xs font-black text-black">GO</span>
               <input
                 ref={input}
                 value={query}
@@ -90,7 +90,7 @@ export function MarketCommand() {
                   <button
                     type="button"
                     onClick={() => go(item.href)}
-                    className="flex w-full items-center gap-4 px-3 py-3 text-left text-sm text-zinc-200 hover:bg-brand-600 hover:text-white"
+                    className="flex w-full items-center gap-4 px-3 py-3 text-left text-sm text-zinc-200 hover:bg-brand-500 hover:text-black"
                   >
                     <span className="w-10 font-mono font-black">{item.code}</span>
                     <span>{locale === "fr" ? item.fr : item.en}</span>
