@@ -12,7 +12,7 @@ export async function Footer() {
         <div className="flex flex-col justify-between gap-6 md:flex-row md:items-start">
           <div className="max-w-md space-y-2">
             <p className="font-mono text-sm font-black uppercase text-white">
-              Aqlee <span className="text-brand-500">Markets</span>
+              Aqlee <span className="text-brand-400">Markets</span>
             </p>
             <p className="text-sm text-zinc-400">{t("tagline")}</p>
           </div>

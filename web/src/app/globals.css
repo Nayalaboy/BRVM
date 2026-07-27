@@ -2,16 +2,16 @@
 @plugin "@tailwindcss/typography";
 
 @theme {
-  --color-brand-50: #fff4e8;
-  --color-brand-100: #ffe3c2;
-  --color-brand-200: #ffc982;
-  --color-brand-300: #ffad45;
-  --color-brand-400: #ff941a;
-  --color-brand-500: #f47b00;
-  --color-brand-600: #d76500;
-  --color-brand-700: #aa4c00;
-  --color-brand-800: #783500;
-  --color-brand-900: #451d00;
+  --color-brand-50: #f5f3ff;
+  --color-brand-100: #ede9fe;
+  --color-brand-200: #ddd6fe;
+  --color-brand-300: #c4b5fd;
+  --color-brand-400: #a78bfa;
+  --color-brand-500: #8b5cf6;
+  --color-brand-600: #7c3aed;
+  --color-brand-700: #6d28d9;
+  --color-brand-800: #5b21b6;
+  --color-brand-900: #4c1d95;
 
   --color-accent-50: #eef7ff;
   --color-accent-100: #d9edff;
@@ -43,12 +43,12 @@ body {
 }
 
 ::selection {
-  background: #f47b00;
+  background: #7c3aed;
   color: #fff;
 }
 
 :focus-visible {
-  outline: 2px solid #f47b00;
+  outline: 2px solid #7c3aed;
   outline-offset: 2px;
 }
 

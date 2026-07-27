@@ -31,7 +31,7 @@ export default async function VerifierPage({
     withdrawn: t("statusWithdrawn"),
   };
   const statusClass: Record<string, string> = {
-    active: "bg-brand-100 text-brand-800",
+    active: "bg-emerald-100 text-emerald-800",
     suspended: "bg-amber-100 text-amber-800",
     withdrawn: "bg-red-100 text-red-800",
   };

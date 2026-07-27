@@ -12,7 +12,7 @@ export default async function AccountPage() {
       <div className="mx-auto max-w-2xl space-y-4">
         <h1 className="text-3xl font-black">{t("accountTitle")}</h1>
         <p>{t("signedOut")}</p>
-        <Link className="inline-block bg-brand-500 px-4 py-2 font-black" href="/connexion">
+        <Link className="inline-block bg-brand-600 px-4 py-2 font-black text-white hover:bg-brand-700" href="/connexion">
           {t("signIn")}
         </Link>
       </div>

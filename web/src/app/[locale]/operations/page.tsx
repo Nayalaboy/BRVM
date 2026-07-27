@@ -12,7 +12,7 @@ export async function generateMetadata() {
 }
 
 const STATUS_CLASS: Record<string, string> = {
-  open: "bg-brand-100 text-brand-800",
+  open: "bg-emerald-100 text-emerald-800",
   announced: "bg-amber-100 text-amber-800",
   closed: "bg-slate-100 text-slate-600",
   settled: "bg-slate-100 text-slate-600",

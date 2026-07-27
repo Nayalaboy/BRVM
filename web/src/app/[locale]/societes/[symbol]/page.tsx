@@ -158,7 +158,7 @@ export default async function CompanyPage({
                           growth === null
                             ? "text-slate-400"
                             : growth >= 0
-                              ? "text-brand-700"
+                              ? "text-emerald-700"
                               : "text-red-600"
                         }`}
                       >

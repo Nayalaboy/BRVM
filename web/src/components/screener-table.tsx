@@ -139,7 +139,7 @@ export function ScreenerTable({ companies }: { companies: CompanyRow[] }) {
                 </td>
                 <td
                   className={`tabular px-4 py-3 text-right ${
-                    (c.ytdReturn ?? 0) >= 0 ? "text-brand-700" : "text-red-600"
+                    (c.ytdReturn ?? 0) >= 0 ? "text-emerald-700" : "text-red-600"
                   }`}
                 >
                   {c.ytdReturn !== null ? formatPercent(c.ytdReturn) : "—"}
