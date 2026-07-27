@@ -2,27 +2,31 @@
 @plugin "@tailwindcss/typography";
 
 @theme {
-  --color-brand-50: #f5f3ff;
-  --color-brand-100: #ede9fe;
-  --color-brand-200: #ddd6fe;
-  --color-brand-300: #c4b5fd;
-  --color-brand-400: #a78bfa;
-  --color-brand-500: #8b5cf6;
-  --color-brand-600: #7c3aed;
-  --color-brand-700: #6d28d9;
-  --color-brand-800: #5b21b6;
-  --color-brand-900: #4c1d95;
+  /* Brand: deep cobalt blue — institutional, trustworthy, distinct from
+     Sikafinance orange and from the green/red/amber data semantics. */
+  --color-brand-50: #eff6ff;
+  --color-brand-100: #dbeafe;
+  --color-brand-200: #bfdbfe;
+  --color-brand-300: #93c5fd;
+  --color-brand-400: #60a5fa;
+  --color-brand-500: #3b82f6;
+  --color-brand-600: #2563eb;
+  --color-brand-700: #1d4ed8;
+  --color-brand-800: #1e40af;
+  --color-brand-900: #1e3a8a;
 
-  --color-accent-50: #eef7ff;
-  --color-accent-100: #d9edff;
-  --color-accent-200: #bce0ff;
-  --color-accent-300: #8acbff;
-  --color-accent-400: #51afff;
-  --color-accent-500: #238eea;
-  --color-accent-600: #126fc7;
-  --color-accent-700: #1259a1;
-  --color-accent-800: #154c85;
-  --color-accent-900: #183f6e;
+  /* Accent: violet — reserved for Premium/exclusive surfaces so they stand
+     apart from the cobalt brand. */
+  --color-accent-50: #f5f3ff;
+  --color-accent-100: #ede9fe;
+  --color-accent-200: #ddd6fe;
+  --color-accent-300: #c4b5fd;
+  --color-accent-400: #a78bfa;
+  --color-accent-500: #8b5cf6;
+  --color-accent-600: #7c3aed;
+  --color-accent-700: #6d28d9;
+  --color-accent-800: #5b21b6;
+  --color-accent-900: #4c1d95;
 
   --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
     "Helvetica Neue", Arial, sans-serif;
@@ -43,12 +47,12 @@ body {
 }
 
 ::selection {
-  background: #7c3aed;
+  background: #2563eb;
   color: #fff;
 }
 
 :focus-visible {
-  outline: 2px solid #7c3aed;
+  outline: 2px solid #2563eb;
   outline-offset: 2px;
 }
 
