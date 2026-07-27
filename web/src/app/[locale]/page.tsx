@@ -1,6 +1,12 @@
 import { getLocale, getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
-import { getDividendCalendar, getIndices, getIntelligenceFeed, getMovers } from "@/lib/api";
+import {
+  getDataStatus,
+  getDividendCalendar,
+  getIndices,
+  getIntelligenceFeed,
+  getMovers,
+} from "@/lib/api";
 import { NewsletterSignup } from "@/components/newsletter-signup";
 import { DataTrust } from "@/components/data-trust";
 import {
@@ -26,11 +32,12 @@ export default async function HomePage() {
   const t = await getTranslations("home");
   const tDiv = await getTranslations("dividends");
   const locale = await getLocale();
-  const [{ indices, date: indexDate }, movers, calendar, intelligence] = await Promise.all([
+  const [{ indices, date: indexDate }, movers, calendar, intelligence, dataStatus] = await Promise.all([
     getIndices(),
     getMovers(),
     getDividendCalendar(),
     getIntelligenceFeed(6),
+    getDataStatus(),
   ]);
   const composite = indices.find((item) => item.code === "BRVM_COMPOSITE");
   const brvm30 = indices.find((item) => item.code === "BRVM_30");
@@ -83,10 +90,10 @@ export default async function HomePage() {
           {locale === "fr" ? "Tableau de marché" : "Market dashboard"}
         </h2>
         <DataTrust
-          date={movers.date}
+          date={dataStatus.latestQuoteDate ?? movers.date}
           locale={locale}
           source="BRVM"
-          stale={movers.date ? Date.now() - new Date(`${movers.date}T23:59:59Z`).getTime() > 4 * 86_400_000 : true}
+          freshness={dataStatus.freshness}
         />
       </div>
 

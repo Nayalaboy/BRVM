@@ -2,7 +2,11 @@ name: pipeline-daily
 
 on:
   schedule:
-    # Weekdays 18:30 GMT — after the BRVM session closes.
+    # BRVM normally publishes the official close shortly after 15:15 GMT.
+    # Refresh twice for source/GitHub scheduling delays, then run the full
+    # BOC/recap pipeline later when the bulletin is more likely to exist.
+    - cron: "30 15 * * 1-5"
+    - cron: "30 16 * * 1-5"
     - cron: "30 18 * * 1-5"
   workflow_dispatch: {}
 
@@ -32,5 +36,9 @@ jobs:
         run: pip install -e "pipeline[dev]"
       - name: Migrate
         run: cd pipeline && alembic upgrade head
-      - name: Daily run
+      - name: Fast market refresh
+        if: github.event_name == 'schedule' && github.event.schedule != '30 18 * * 1-5'
+        run: python -m brvm_pipeline.run market-refresh
+      - name: Full daily run
+        if: github.event_name == 'workflow_dispatch' || github.event.schedule == '30 18 * * 1-5'
         run: python -m brvm_pipeline.run daily

@@ -34,9 +34,12 @@ Vercel doit donc pointer sur `BRVM/web`.
 
 ## 2. Cron quotidien (GitHub Actions)
 
-`pipeline-daily` (weekdays 18:30 GMT) exécute `alembic upgrade head` +
-`python -m brvm_pipeline.run daily`. Ajouter les secrets `DATABASE_URL`,
-`RESEND_API_KEY`, `ALERT_EMAIL_TO` (voir `.github/workflows/daily.yml`).
+`pipeline-daily` exécute un rafraîchissement léger des cours et indices à
+15:30 puis 16:30 GMT (`market-refresh`), avec contrôle de date/source à chaque
+passage. Le run complet de 18:30 GMT collecte aussi les dividendes et le BOC,
+puis ne publie le récapitulatif que si ses contrôles passent. Ajouter les
+secrets `DATABASE_URL`, `RESEND_API_KEY`, `ALERT_EMAIL_TO` (voir
+`.github/workflows/daily.yml`).
 
 ## 3. Site Vercel (`web/`)
 

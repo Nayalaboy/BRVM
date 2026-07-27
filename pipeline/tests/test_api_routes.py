@@ -109,8 +109,12 @@ def test_status_reports_market_coverage() -> None:
     client, session = _client()
     response = client.get("/status")
     assert response.status_code == 200
-    assert response.json()["coverage_pct"] == 100
-    assert response.json()["status"] == "healthy"
+    body = response.json()
+    assert body["coverage_pct"] == 100
+    assert body["status"] == "degraded"
+    assert body["freshness"] == "unavailable"
+    assert body["latest_market_run_job"] == "daily"
+    assert body["last_successful_run"] == "2026-07-24T19:00:00+00:00"
     session.close()
 
 

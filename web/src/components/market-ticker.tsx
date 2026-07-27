@@ -1,8 +1,11 @@
+import { getLocale } from "next-intl/server";
 import { getIndices, getMovers } from "@/lib/api";
-import { formatNumber } from "@/lib/format";
+import { formatDate, formatNumber } from "@/lib/format";
 
 export async function MarketTicker() {
-  const [{ indices }, movers] = await Promise.all([getIndices(), getMovers()]);
+  const locale = await getLocale();
+  const [{ indices, date: indexDate }, movers] = await Promise.all([getIndices(), getMovers()]);
+  const sessionDate = movers.date ?? indexDate;
   const items = [
     ...indices.slice(0, 4).map((item) => ({
       code: item.code.replaceAll("_", " "),
@@ -19,14 +22,18 @@ export async function MarketTicker() {
   return (
     <div className="border-b border-zinc-700 bg-black text-white">
       <div className="mx-auto flex max-w-[1440px]">
-        <div className="z-10 flex shrink-0 items-center gap-2 bg-brand-500 px-3 font-mono text-[10px] font-black uppercase text-black shadow-[8px_0_16px_rgba(0,0,0,0.65)]">
-          <span className="live-pulse" aria-hidden />
-          BRVM LIVE
+        <div className="z-10 flex shrink-0 items-center gap-2 whitespace-nowrap bg-brand-500 px-3 font-mono text-[10px] font-black uppercase text-black shadow-[8px_0_16px_rgba(0,0,0,0.65)]">
+          <span>{locale === "fr" ? "BRVM · DERNIÈRE CLÔTURE" : "BRVM · LAST CLOSE"}</span>
+          {sessionDate ? (
+            <span className="border-l border-black/30 pl-2 font-bold">
+              {formatDate(sessionDate, locale)}
+            </span>
+          ) : null}
         </div>
         <div
           className="market-tape min-w-0 flex-1"
           role="region"
-          aria-label="BRVM live market ticker"
+          aria-label={locale === "fr" ? "Derniers cours de clôture BRVM" : "Latest BRVM closing prices"}
           tabIndex={0}
         >
           <div className="market-tape-track">

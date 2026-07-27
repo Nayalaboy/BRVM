@@ -34,7 +34,8 @@ Prérequis : Python ≥ 3.12, Node ≥ 22, pnpm ≥ 10. Aucun service externe re
 ```bash
 # 1) Pipeline : venv + schéma + données réelles (47 sociétés, dividendes)
 make bootstrap
-make daily            # collecte la dernière séance depuis brvm.org (idempotent)
+make market-refresh   # cours + indices officiels, contrôle de date (rapide)
+make daily            # run complet : dividendes + BOC + récap vérifié
 make api              # API read-only sur http://localhost:8000/docs
 
 # 2) Site (dans un autre terminal)

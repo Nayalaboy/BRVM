@@ -79,6 +79,7 @@ class DividendStatus(enum.StrEnum):
 
 class RunJob(enum.StrEnum):
     DAILY = "daily"
+    MARKET_REFRESH = "market_refresh"
     BACKFILL = "backfill"
     BOC_INVENTORY = "boc_inventory"
     WEEKLY_REGISTRY = "weekly_registry"

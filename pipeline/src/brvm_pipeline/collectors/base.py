@@ -10,6 +10,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
+from datetime import date
 
 from sqlalchemy.orm import Session
 
@@ -29,6 +30,7 @@ class CollectContext:
 @dataclass
 class CollectResult:
     collector: str
+    source_date: date | None = None
     inserted: int = 0
     updated: int = 0
     skipped: int = 0
@@ -38,6 +40,7 @@ class CollectResult:
 
     def as_stats(self) -> dict:
         return {
+            "source_date": self.source_date.isoformat() if self.source_date else None,
             "inserted": self.inserted,
             "updated": self.updated,
             "skipped": self.skipped,

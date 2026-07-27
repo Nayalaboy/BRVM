@@ -11,6 +11,7 @@ serves a **read-only FastAPI** consumed by the website.
 
 ```bash
 make bootstrap     # venv + deps + migrations + real seed (47 companies, dividends)
+make market-refresh # official quotes + indices, date reconciliation, QA, metrics
 make daily         # collect quotes + indices + dividends, QA, metrics, recap
 make api           # http://localhost:8000/docs  (read-only API for the site)
 make test          # parser + logic tests
@@ -27,7 +28,7 @@ parsers/     pure HTML/PDF parsers (no I/O → unit-tested against real fixtures
 quality/     negative-price, volume z-score outliers, missing-ticker detection
 derived/     dividend yield, 52w hi/lo, YTD, ADV20  +  the daily Market recap
 api/         FastAPI read layer with ETag caching
-run.py       orchestrator: `daily | backfill | weekly-registry | seed`
+run.py       orchestrator: `market-refresh | daily | backfill | weekly-registry | seed`
 models.py    SQLAlchemy 2.0 — the single source of truth for the schema
 ```
 
@@ -88,9 +89,11 @@ of record.
 
 **Deploy (target <$20/mo).**
 - DB: Neon/Supabase Postgres (free) → set `BRVM_DATABASE_URL`.
-- Cron: the `pipeline-daily` GitHub Action (weekdays 18:30 GMT) runs
-  `alembic upgrade head` + `python -m brvm_pipeline.run daily`. Add repo secrets
-  `DATABASE_URL`, `RESEND_API_KEY`, `ALERT_EMAIL_TO`.
+- Cron: the `pipeline-daily` GitHub Action refreshes official closes at 15:30
+  and 16:30 GMT with `market-refresh`, then runs the full BOC/recap pipeline at
+  18:30 GMT. Every close refresh validates the official session date and
+  quote/index agreement. Add repo secrets `DATABASE_URL`, `RESEND_API_KEY`,
+  `ALERT_EMAIL_TO`.
 - Registry refresh: schedule `make registry` weekly (or a second Action).
 - BOC PDFs: set `BRVM_STORAGE_BACKEND=s3` + `BRVM_S3_*` for Cloudflare R2 (free).
 - API: deploy `brvm_pipeline.api.main:app` (Fly.io/Railway free tier, or Vercel

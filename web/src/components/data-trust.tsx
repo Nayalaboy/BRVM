@@ -1,26 +1,43 @@
 import { formatDate } from "@/lib/format";
+import type { DataFreshness } from "@/lib/api";
 
 export function DataTrust({
   date,
   locale,
   source = "BRVM",
   sourceUrl,
-  stale = false,
+  freshness,
 }: {
   date: string | null;
   locale: string;
   source?: string | null;
   sourceUrl?: string | null;
-  stale?: boolean;
+  freshness?: DataFreshness | null;
 }) {
+  const state: DataFreshness = !date || freshness === null
+    ? "unavailable"
+    : (freshness ?? "current");
   const label = locale === "fr" ? "Données" : "Data";
   const asOf = locale === "fr" ? "au" : "as of";
-  const staleLabel = locale === "fr" ? "mise à jour retardée" : "delayed update";
+  const stateLabel: Record<DataFreshness, string | null> = {
+    current: null,
+    awaiting_close: locale === "fr"
+      ? "clôture officielle du jour en attente"
+      : "today’s official close pending",
+    delayed: locale === "fr" ? "mise à jour retardée" : "delayed update",
+    unavailable: locale === "fr" ? "indisponibles" : "unavailable",
+  };
+  const dotClass: Record<DataFreshness, string> = {
+    current: "bg-emerald-500",
+    awaiting_close: "bg-sky-500",
+    delayed: "bg-amber-500",
+    unavailable: "bg-zinc-400",
+  };
   const content = (
     <>
-      <span className={`h-2 w-2 rounded-full ${stale ? "bg-amber-500" : "bg-emerald-500"}`} />
+      <span className={`h-2 w-2 rounded-full ${dotClass[state]}`} />
       {label} {source ? `· ${source.toUpperCase()}` : ""} {date ? `· ${asOf} ${formatDate(date, locale)}` : ""}
-      {stale ? ` · ${staleLabel}` : ""}
+      {stateLabel[state] ? ` · ${stateLabel[state]}` : ""}
     </>
   );
 

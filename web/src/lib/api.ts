@@ -21,6 +21,25 @@ async function get<T>(path: string, revalidate = REVALIDATE): Promise<T> {
   return res.json() as Promise<T>;
 }
 
+/**
+ * Market freshness endpoints must reflect a completed ingestion immediately.
+ * Bypass both the Next.js data cache and intermediary HTTP caches instead of
+ * serving the previous session once while a timed revalidation runs.
+ */
+async function getNoStore<T>(path: string): Promise<T> {
+  const res = await fetch(`${BASE}${path}`, {
+    cache: "no-store",
+    headers: {
+      accept: "application/json",
+      "cache-control": "no-cache",
+    },
+  });
+  if (!res.ok) {
+    throw new Error(`Pipeline API ${path} → ${res.status}`);
+  }
+  return res.json() as Promise<T>;
+}
+
 // --- Dividends --------------------------------------------------------------
 
 export type DividendStatus = "announced" | "proposed" | "approved" | "paid";
@@ -314,7 +333,7 @@ export interface Movers {
 }
 
 export async function getMovers(): Promise<Movers> {
-  const d = await get<{
+  const d = await getNoStore<{
     date: string | null;
     gainers: { ticker: string; close: number; change_pct: number; value_traded: number }[];
     losers: { ticker: string; close: number; change_pct: number; value_traded: number }[];
@@ -341,7 +360,7 @@ export interface IndexRow {
 }
 
 export async function getIndices(): Promise<{ date: string | null; indices: IndexRow[] }> {
-  const d = await get<{
+  const d = await getNoStore<{
     date: string | null;
     indices: { code: string; value: number; change_pct: number }[];
   }>("/indices");
@@ -453,30 +472,69 @@ export async function getOperations(): Promise<Operation[]> {
   }));
 }
 
+export type DataFreshness = "current" | "awaiting_close" | "delayed" | "unavailable";
+export type MarketState = "pre_close" | "post_close" | "weekend";
+
 export interface DataStatus {
   generatedAt: string;
   latestQuoteDate: string | null;
   latestIndexDate: string | null;
   latestRegistryRefresh: string | null;
   lastSuccessfulRun: string | null;
+  latestMarketRunAt: string | null;
+  latestMarketRunJob: string | null;
+  latestMarketRunStatus: string | null;
+  lastDailyRunAt: string | null;
+  lastDailyRunStatus: string | null;
+  sourceSessionDate: string | null;
+  qualityPassed: boolean | null;
+  recapPublished: boolean | null;
   activeCompanies: number;
   quotedCompanies: number;
   coveragePct: number;
+  freshness: DataFreshness;
+  marketState: MarketState;
+  expectedSessionDate: string | null;
+  businessDaysBehind: number | null;
+  reason: string;
   status: "healthy" | "degraded";
 }
 
 export async function getDataStatus(): Promise<DataStatus> {
-  const d = await get<{
+  const d = await getNoStore<{
     generated_at: string; latest_quote_date: string | null; latest_index_date: string | null;
     latest_registry_refresh: string | null; last_successful_run: string | null;
+    latest_market_run_at: string | null; latest_market_run_job: string | null;
+    latest_market_run_status: string | null; last_daily_run_at: string | null;
+    last_daily_run_status: string | null; source_session_date: string | null;
+    quality_passed: boolean | null; recap_published: boolean | null;
     active_companies: number; quoted_companies: number; coverage_pct: number;
+    freshness: DataFreshness; market_state: MarketState;
+    expected_session_date: string | null; business_days_behind: number | null;
+    reason: string;
     status: "healthy" | "degraded";
-  }>("/status", 60);
+  }>("/status");
   return {
     generatedAt: d.generated_at, latestQuoteDate: d.latest_quote_date,
     latestIndexDate: d.latest_index_date, latestRegistryRefresh: d.latest_registry_refresh,
-    lastSuccessfulRun: d.last_successful_run, activeCompanies: d.active_companies,
-    quotedCompanies: d.quoted_companies, coveragePct: d.coverage_pct, status: d.status,
+    lastSuccessfulRun: d.last_successful_run,
+    latestMarketRunAt: d.latest_market_run_at,
+    latestMarketRunJob: d.latest_market_run_job,
+    latestMarketRunStatus: d.latest_market_run_status,
+    lastDailyRunAt: d.last_daily_run_at,
+    lastDailyRunStatus: d.last_daily_run_status,
+    sourceSessionDate: d.source_session_date,
+    qualityPassed: d.quality_passed,
+    recapPublished: d.recap_published,
+    activeCompanies: d.active_companies,
+    quotedCompanies: d.quoted_companies,
+    coveragePct: d.coverage_pct,
+    freshness: d.freshness,
+    marketState: d.market_state,
+    expectedSessionDate: d.expected_session_date,
+    businessDaysBehind: d.business_days_behind,
+    reason: d.reason,
+    status: d.status,
   };
 }
 

@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from datetime import date
+from datetime import UTC, datetime
+from zoneinfo import ZoneInfo
 
 from sqlalchemy import select
 
@@ -29,7 +30,26 @@ class BrvmQuotesCollector(Collector):
         res = CollectResult(collector=self.name)
         html = ctx.client.get_text(self.url)
 
-        session_date = parse_session_date(html) or date.today()
+        session_date = parse_session_date(html)
+        if session_date is None:
+            res.ok = False
+            res.warnings.append("official session date could not be parsed")
+            log.error("quote_session_date_missing", url=self.url)
+            return res
+        res.source_date = session_date
+        market_today = datetime.now(UTC).astimezone(ZoneInfo("Africa/Abidjan")).date()
+        if session_date > market_today:
+            res.ok = False
+            res.warnings.append(
+                f"official session date {session_date} is in the future"
+            )
+            log.error(
+                "quote_session_date_future",
+                session_date=session_date.isoformat(),
+                market_today=market_today.isoformat(),
+            )
+            return res
+
         quotes = parse_quotes(html)
         if not quotes:
             res.ok = False
@@ -37,10 +57,38 @@ class BrvmQuotesCollector(Collector):
             log.error("no_quotes_parsed", url=self.url)
             return res
 
+        company_rows = list(ctx.session.execute(select(Company)).scalars())
         companies = {
             c.ticker.upper(): c
-            for c in ctx.session.execute(select(Company)).scalars()
+            for c in company_rows
         }
+        active_count = sum(1 for company in company_rows if company.is_active)
+        known_quote_count = sum(1 for quote in quotes if quote.ticker in companies)
+        if active_count and known_quote_count < max(1, active_count - 2):
+            res.ok = False
+            res.warnings.append(
+                f"incomplete official board: {known_quote_count}/{active_count} active tickers"
+            )
+            log.error(
+                "quote_board_incomplete",
+                parsed=known_quote_count,
+                active=active_count,
+                session_date=session_date.isoformat(),
+            )
+            return res
+
+        latest_stored = ctx.session.scalar(select(DailyQuote.date).order_by(DailyQuote.date.desc()).limit(1))
+        if latest_stored and session_date < latest_stored:
+            res.ok = False
+            res.warnings.append(
+                f"official session regressed from {latest_stored} to {session_date}"
+            )
+            log.error(
+                "quote_session_regression",
+                latest_stored=latest_stored.isoformat(),
+                source_date=session_date.isoformat(),
+            )
+            return res
 
         for q in quotes:
             company = companies.get(q.ticker)

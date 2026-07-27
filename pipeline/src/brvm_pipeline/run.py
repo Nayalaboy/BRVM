@@ -1,6 +1,7 @@
 """Pipeline entrypoint.
 
-    python -m brvm_pipeline.run daily            # weekday cron (18:30 GMT)
+    python -m brvm_pipeline.run market-refresh   # fast close refresh (15:30 GMT)
+    python -m brvm_pipeline.run daily            # full weekday run (18:30 GMT)
     python -m brvm_pipeline.run weekly-registry  # refresh licensed entities
     python -m brvm_pipeline.run seed             # bootstrap real fixtures
     python -m brvm_pipeline.run backfill --since 2026-01-01
@@ -15,7 +16,7 @@ from __future__ import annotations
 from datetime import UTC, datetime
 
 import typer
-from sqlalchemy import func, select
+from sqlalchemy import select
 
 from . import __version__
 from .alerts import send_failure_alert
@@ -41,7 +42,6 @@ from .derived.recap import build_recap
 from .logging import configure_logging, get_logger
 from .models import (
     Company,
-    DailyQuote,
     GovDocument,
     IngestionRun,
     MarketEvent,
@@ -89,9 +89,68 @@ def _run_collectors(collectors: list, run_id: int, **ctx_kwargs) -> tuple[list[C
     return results, all_ok
 
 
-def _latest_quote_date(default=None):  # noqa: ANN001
-    with session_scope() as s:
-        return s.execute(select(func.max(DailyQuote.date))).scalar_one_or_none() or default
+def _market_session_from(results: list[CollectResult]):
+    by_name = {result.collector: result for result in results}
+    quotes = by_name.get("brvm_quotes")
+    indices = by_name.get("brvm_indices")
+    if quotes is None or not quotes.ok or quotes.source_date is None:
+        detail = "; ".join(quotes.warnings) if quotes else "collector did not run"
+        raise RuntimeError(f"official quote collection failed: {detail}")
+    if indices is None or not indices.ok or indices.source_date is None:
+        detail = "; ".join(indices.warnings) if indices else "collector did not run"
+        raise RuntimeError(f"official index collection failed: {detail}")
+    if quotes.source_date != indices.source_date:
+        raise RuntimeError(
+            "official quote/index session mismatch: "
+            f"{quotes.source_date} != {indices.source_date}"
+        )
+    return quotes.source_date
+
+
+@app.command("market-refresh")
+def market_refresh() -> None:
+    """Refresh closing quotes/indices promptly, then QA and recompute metrics."""
+    configure_logging()
+    run_id = _open_run(RunJob.MARKET_REFRESH.value)
+    stats: dict = {}
+    try:
+        results, all_ok = _run_collectors(
+            [BrvmQuotesCollector(), BrvmIndicesCollector()],
+            run_id,
+        )
+        stats["collectors"] = {result.collector: result.as_stats() for result in results}
+        as_of = _market_session_from(results)
+        stats["as_of"] = as_of.isoformat()
+
+        with session_scope() as session:
+            report = run_quality_checks(session, as_of)
+        stats["quality"] = report.as_dict()
+
+        if report.passed:
+            with session_scope() as session:
+                recompute_all(session, as_of)
+
+        status = (
+            RunStatus.SUCCESS.value
+            if all_ok and report.passed
+            else RunStatus.PARTIAL.value
+        )
+        _finalize(run_id, status, stats)
+        if status != RunStatus.SUCCESS.value:
+            send_failure_alert(
+                f"[BRVM pipeline] market refresh {status}",
+                f"as_of={as_of}\nquality_passed={report.passed}\n"
+                f"collectors_ok={all_ok}\nstats={stats}",
+            )
+            raise typer.Exit(code=1)
+        log.info("market_refresh_done", status=status, as_of=as_of.isoformat())
+    except typer.Exit:
+        raise
+    except Exception as exc:  # noqa: BLE001
+        _finalize(run_id, RunStatus.FAILED.value, stats, error=str(exc))
+        send_failure_alert("[BRVM pipeline] market refresh FAILED", f"{exc}\nstats={stats}")
+        log.error("market_refresh_failed", error=str(exc))
+        raise typer.Exit(code=1) from exc
 
 
 @app.command()
@@ -110,9 +169,8 @@ def daily() -> None:
         results, all_ok = _run_collectors(collectors, run_id)
         stats["collectors"] = {r.collector: r.as_stats() for r in results}
 
-        as_of = _latest_quote_date()
-        if as_of is None:
-            raise RuntimeError("no quotes present after collection")
+        as_of = _market_session_from(results)
+        stats["as_of"] = as_of.isoformat()
 
         with session_scope() as s:
             report = run_quality_checks(s, as_of)

@@ -7,7 +7,8 @@ codes; unknown names are stored under a slugified code so nothing is lost.
 from __future__ import annotations
 
 import re
-from datetime import date
+from datetime import UTC, datetime
+from zoneinfo import ZoneInfo
 
 from sqlalchemy import select
 
@@ -52,12 +53,54 @@ class BrvmIndicesCollector(Collector):
     def collect(self, ctx: CollectContext) -> CollectResult:
         res = CollectResult(collector=self.name)
         html = ctx.client.get_text(self.url)
-        session_date = parse_session_date(html) or date.today()
+        session_date = parse_session_date(html)
+        if session_date is None:
+            res.ok = False
+            res.warnings.append("official index session date could not be parsed")
+            log.error("index_session_date_missing", url=self.url)
+            return res
+        res.source_date = session_date
+        market_today = datetime.now(UTC).astimezone(ZoneInfo("Africa/Abidjan")).date()
+        if session_date > market_today:
+            res.ok = False
+            res.warnings.append(
+                f"official index session date {session_date} is in the future"
+            )
+            log.error(
+                "index_session_date_future",
+                session_date=session_date.isoformat(),
+                market_today=market_today.isoformat(),
+            )
+            return res
 
         rows = parse_indices(html)
         if not rows:
+            res.ok = False
             res.warnings.append("no indices parsed (markup may have changed)")
-            log.warning("no_indices_parsed", url=self.url)
+            log.error("no_indices_parsed", url=self.url)
+            return res
+        codes = {index_code(row.name) for row in rows}
+        required = {"BRVM_COMPOSITE", "BRVM_30"}
+        if not required.issubset(codes):
+            res.ok = False
+            missing = ", ".join(sorted(required - codes))
+            res.warnings.append(f"required official indices missing: {missing}")
+            log.error("required_indices_missing", missing=missing)
+            return res
+
+        latest_stored = ctx.session.scalar(
+            select(IndexValue.date).order_by(IndexValue.date.desc()).limit(1)
+        )
+        if latest_stored and session_date < latest_stored:
+            res.ok = False
+            res.warnings.append(
+                f"official index session regressed from {latest_stored} to {session_date}"
+            )
+            log.error(
+                "index_session_regression",
+                latest_stored=latest_stored.isoformat(),
+                source_date=session_date.isoformat(),
+            )
             return res
 
         for r in rows:

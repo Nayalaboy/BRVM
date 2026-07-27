@@ -15,6 +15,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from ..db import get_session_factory
+from ..freshness import evaluate_market_freshness
 from ..models import (
     Company,
     CompanyMetric,
@@ -29,6 +30,7 @@ from ..models import (
     MarketEventCompany,
     MarketRecap,
     PrimaryOperation,
+    RunJob,
     RunStatus,
 )
 from .cache import etag_json
@@ -50,6 +52,14 @@ def _f(v: Decimal | None) -> float | None:
 
 def _iso(d: date | None) -> str | None:
     return d.isoformat() if d is not None else None
+
+
+def _iso_utc(value: datetime | None) -> str | None:
+    if value is None:
+        return None
+    if value.tzinfo is None:
+        value = value.replace(tzinfo=UTC)
+    return value.astimezone(UTC).isoformat()
 
 
 def _normalise(text: str) -> str:
@@ -377,7 +387,11 @@ def dividend_calendar(request: Request, db: Session = Depends(get_db)):
 def movers(request: Request, db: Session = Depends(get_db)):
     as_of = db.execute(select(func.max(DailyQuote.date))).scalar_one_or_none()
     if as_of is None:
-        return etag_json(request, {"date": None, "gainers": [], "losers": [], "most_active": []})
+        return etag_json(
+            request,
+            {"date": None, "gainers": [], "losers": [], "most_active": []},
+            max_age=30,
+        )
     rows = db.execute(
         select(DailyQuote, Company)
         .join(Company, Company.id == DailyQuote.company_id)
@@ -402,6 +416,7 @@ def movers(request: Request, db: Session = Depends(get_db)):
     return etag_json(
         request,
         {"date": _iso(as_of), "gainers": gainers, "losers": losers, "most_active": active},
+        max_age=30,
     )
 
 
@@ -415,7 +430,7 @@ def indices(request: Request, db: Session = Depends(get_db)):
             {"code": i.index_code, "value": _f(i.value), "change_pct": _f(i.change_pct)} for i in rows
         ],
     }
-    return etag_json(request, payload)
+    return etag_json(request, payload, max_age=30)
 
 
 @router.get("/recap/{recap_date}")
@@ -536,9 +551,31 @@ def data_status(request: Request, db: Session = Depends(get_db)):
     latest_quote = db.execute(select(func.max(DailyQuote.date))).scalar_one_or_none()
     latest_index = db.execute(select(func.max(IndexValue.date))).scalar_one_or_none()
     latest_registry = db.execute(select(func.max(LicensedEntity.registry_refreshed_at))).scalar_one_or_none()
+    market_jobs = [RunJob.DAILY.value, RunJob.MARKET_REFRESH.value]
+    latest_market_run = db.execute(
+        select(IngestionRun)
+        .where(
+            IngestionRun.job.in_(market_jobs),
+            IngestionRun.finished_at.is_not(None),
+        )
+        .order_by(IngestionRun.finished_at.desc())
+        .limit(1)
+    ).scalar_one_or_none()
     latest_success = db.execute(
         select(IngestionRun)
-        .where(IngestionRun.status == RunStatus.SUCCESS.value)
+        .where(
+            IngestionRun.job.in_(market_jobs),
+            IngestionRun.status == RunStatus.SUCCESS.value,
+        )
+        .order_by(IngestionRun.finished_at.desc())
+        .limit(1)
+    ).scalar_one_or_none()
+    latest_daily = db.execute(
+        select(IngestionRun)
+        .where(
+            IngestionRun.job == RunJob.DAILY.value,
+            IngestionRun.finished_at.is_not(None),
+        )
         .order_by(IngestionRun.finished_at.desc())
         .limit(1)
     ).scalar_one_or_none()
@@ -548,22 +585,63 @@ def data_status(request: Request, db: Session = Depends(get_db)):
         if latest_quote
         else 0
     )
+
+    market_stats = latest_market_run.stats if latest_market_run and latest_market_run.stats else {}
+    quote_stats = market_stats.get("collectors", {}).get("brvm_quotes", {})
+    source_date_raw = quote_stats.get("source_date")
+    try:
+        source_session_date = date.fromisoformat(source_date_raw) if source_date_raw else None
+    except (TypeError, ValueError):
+        source_session_date = None
+    freshness = evaluate_market_freshness(
+        latest_quote=latest_quote,
+        latest_index=latest_index,
+        source_session_date=source_session_date,
+        source_checked_at=latest_market_run.finished_at if latest_market_run else None,
+    )
+    quality_passed = market_stats.get("quality", {}).get("passed")
+    daily_stats = latest_daily.stats if latest_daily and latest_daily.stats else {}
+    recap_published = daily_stats.get("recap", {}).get("published")
+    coverage_pct = (
+        round((quoted_count or 0) / active_count * 100, 1) if active_count else 0
+    )
+    coverage_ok = bool(
+        latest_quote and active_count and (quoted_count or 0) >= active_count - 2
+    )
+    freshness_ok = freshness.freshness in {"current", "awaiting_close"}
+    pipeline_ok = not (
+        latest_market_run
+        and latest_market_run.status == RunStatus.FAILED.value
+    )
     payload = {
         "generated_at": datetime.now(UTC).isoformat(),
         "latest_quote_date": _iso(latest_quote),
         "latest_index_date": _iso(latest_index),
-        "latest_registry_refresh": latest_registry.isoformat() if latest_registry else None,
-        "last_successful_run": latest_success.finished_at.isoformat()
-        if latest_success and latest_success.finished_at
-        else None,
+        "latest_registry_refresh": _iso_utc(latest_registry),
+        "last_successful_run": _iso_utc(
+            latest_success.finished_at if latest_success else None
+        ),
+        "latest_market_run_at": _iso_utc(
+            latest_market_run.finished_at if latest_market_run else None
+        ),
+        "latest_market_run_job": latest_market_run.job if latest_market_run else None,
+        "latest_market_run_status": latest_market_run.status if latest_market_run else None,
+        "last_daily_run_at": _iso_utc(
+            latest_daily.finished_at if latest_daily else None
+        ),
+        "last_daily_run_status": latest_daily.status if latest_daily else None,
+        "source_session_date": _iso(source_session_date),
+        "quality_passed": quality_passed,
+        "recap_published": recap_published,
         "active_companies": active_count or 0,
         "quoted_companies": quoted_count or 0,
-        "coverage_pct": round((quoted_count or 0) / active_count * 100, 1) if active_count else 0,
+        "coverage_pct": coverage_pct,
+        **freshness.as_dict(),
         "status": "healthy"
-        if latest_quote and active_count and (quoted_count or 0) >= active_count - 2
+        if coverage_ok and freshness_ok and pipeline_ok and quality_passed is not False
         else "degraded",
     }
-    return etag_json(request, payload, max_age=60)
+    return etag_json(request, payload, max_age=30)
 
 
 @router.get("/intelligence")
