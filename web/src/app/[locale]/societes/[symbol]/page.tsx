@@ -24,10 +24,12 @@ export async function generateMetadata({
 }
 
 const RANGES = [
-  { key: "1m", limit: 23, fr: "1 M", en: "1M" },
-  { key: "6m", limit: 130, fr: "6 M", en: "6M" },
-  { key: "1y", limit: 260, fr: "1 A", en: "1Y" },
-  { key: "max", limit: 2000, fr: "Max", en: "Max" },
+  { key: "1d", limit: 2, days: null, fr: "1 J", en: "1D" },
+  { key: "1w", limit: 6, days: 7, fr: "1 S", en: "1W" },
+  { key: "1m", limit: 23, days: 31, fr: "1 M", en: "1M" },
+  { key: "6m", limit: 130, days: 183, fr: "6 M", en: "6M" },
+  { key: "1y", limit: 260, days: 366, fr: "1 A", en: "1Y" },
+  { key: "max", limit: 2000, days: null, fr: "Max", en: "Max" },
 ] as const;
 type RangeKey = (typeof RANGES)[number]["key"];
 
@@ -45,11 +47,21 @@ export default async function CompanyPage({
   const locale = await getLocale();
 
   const chartRange: RangeKey = RANGES.some((r) => r.key === rangeParam) ? (rangeParam as RangeKey) : "1y";
-  const limit = RANGES.find((r) => r.key === chartRange)!.limit;
+  const selectedRange = RANGES.find((r) => r.key === chartRange)!;
+  const limit = selectedRange.limit;
   const [company, quotes] = await Promise.all([getCompany(symbol), getQuotes(symbol, limit)]);
   if (!company) notFound();
 
-  const chartPoints = quotes.filter((q) => q.close !== null);
+  const latestQuoteDate = quotes.at(-1)?.date;
+  const cutoffDate =
+    selectedRange.days !== null && latestQuoteDate
+      ? new Date(`${latestQuoteDate}T00:00:00Z`).getTime() - selectedRange.days * 86_400_000
+      : null;
+  const rangeQuotes =
+    cutoffDate === null
+      ? quotes
+      : quotes.filter((quote) => new Date(`${quote.date}T00:00:00Z`).getTime() >= cutoffDate);
+  const chartPoints = rangeQuotes.filter((q) => q.close !== null);
   const rangeFirst = chartPoints[0]?.close ?? null;
   const rangeLast = chartPoints[chartPoints.length - 1]?.close ?? null;
   const rangeChange = rangeFirst && rangeLast ? rangeLast / rangeFirst - 1 : null;
@@ -144,7 +156,7 @@ export default async function CompanyPage({
             </div>
           </div>
           <div className="p-4">
-            <PriceChart quotes={quotes} exDates={exDates} locale={locale} />
+            <PriceChart quotes={rangeQuotes} exDates={exDates} locale={locale} />
           </div>
         </section>
       ) : null}
