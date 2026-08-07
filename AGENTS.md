@@ -2,29 +2,39 @@
 
 ## Cursor Cloud specific instructions
 
-Monorepo with two independent components (see `README.md` for full docs):
+Aqlee Invest is a monorepo with **two services** that run together for full local
+testing (see `README.md` and `pipeline/README.md` for the canonical commands):
 
-- `pipeline/` — Python 3.12 FastAPI + SQLAlchemy/Alembic data pipeline. Owns the DB schema, serves a **read-only** API on `http://localhost:8000`.
-- `web/` — Next.js 16 (App Router, next-intl FR/EN) public site on `http://localhost:3000`. Consumes ONLY the pipeline API, never the DB directly.
+| Service | Dir | Dev command | URL |
+|---|---|---|---|
+| Pipeline read-only API (FastAPI, Python 3.12, SQLite) | `pipeline/` | `make api` | http://localhost:8000 (`/docs`, `/health`) |
+| Public website (Next.js 16, React 19) | `web/` | `pnpm dev` | http://localhost:3000 |
 
-The update script already installs dependencies (Python venv at `pipeline/.venv` + `pnpm install`). Standard commands live in the root `Makefile` (pipeline) and `package.json`/`web/package.json` (web). Notes below are the non-obvious bits.
+The website reads **only** from the pipeline API (never the DB). Start the API
+first, then the web dev server. Default `PIPELINE_API_URL` is `http://localhost:8000`.
 
-### Pipeline (Python)
+### Non-obvious gotchas
 
-- Everything runs through the `Makefile` targets, which invoke `pipeline/.venv/bin/*` directly (no `source activate` needed).
-- **Startup gotcha:** Alembic's `migrations/env.py` opens the SQLite engine directly and does NOT create the `pipeline/data/` directory, so a fresh checkout hits `sqlite3.OperationalError: unable to open database file`. Run `mkdir -p pipeline/data` once before `make migrate` / `make bootstrap` / `make seed`. (The `pipeline/data/` dir is gitignored, so it will be missing on every fresh VM.)
-- First-time data setup: `make bootstrap` (venv + deps + migrate + seed + registry). If deps are already installed, the minimal DB setup is `mkdir -p pipeline/data && make migrate && make seed && make registry`. Seed loads real data (47 companies, dividends, 15 SGIs) so the site is populated offline.
-- Run the API: `make api` (uvicorn `--reload` on port 8000; docs at `/docs`).
-- Lint: `make lint` (ruff). Tests: `make test` (pytest, offline — uses fixtures/respx, no network).
-- The daily/market collectors (`make daily`, `make market-refresh`) hit brvm.org over the network and are not needed for local dev; the seed data is sufficient.
+- **`make migrate` needs the `pipeline/data/` directory to already exist.** Alembic's
+  `pipeline/migrations/env.py` connects to SQLite directly and does NOT create the
+  parent directory (only the app's `db.py` does). On a fresh checkout the dir is
+  absent (it is gitignored), so migrations fail with `unable to open database file`.
+  Run `mkdir -p pipeline/data` before `make migrate`/`make bootstrap`. The update
+  script already does this.
+- **Local DB setup / seeding is not in the update script** (it's data/migration, not
+  a dependency refresh). To (re)create and populate the local SQLite DB, run
+  `make bootstrap` (venv + deps + migrate + seed + registry). This seeds 47 companies,
+  real dividends, and 15 licensed SGIs — all from local fixtures, **no network
+  required** (`make registry` falls back to seed data offline). The DB file lives at
+  `pipeline/data/brvm.sqlite` and persists in the VM snapshot.
+- **`python3.12-venv` is a system dependency** required to create the pipeline venv.
+  It is installed in the VM snapshot; if `python3 -m venv` fails on a fresh machine,
+  `sudo apt-get install -y python3.12-venv`.
+- **`pnpm lint` is a no-op** for `web` (there is no `lint` script in `web/package.json`;
+  Turbo reports "No tasks were executed"). Use `pnpm typecheck` and `pnpm test` for the
+  web quality gates. Pipeline linting is `make lint` (ruff).
 
-### Web (Next.js)
+### Quality commands
 
-- Runs with zero config: `PIPELINE_API_URL` defaults to `http://localhost:8000`, so just start the API first, then `pnpm dev`.
-- Commands (root, via turbo): `pnpm dev`, `pnpm build`, `pnpm typecheck`, `pnpm test` (vitest). There is **no** `pnpm lint` task defined for `web` — `pnpm typecheck` is the type/lint gate (matches CI in `.github/workflows/ci.yml`).
-- `pnpm build` regenerates `web/next-env.d.ts`; leave that change uncommitted.
-- Email capture (newsletter) and Google auth are no-ops in dev unless `EMAIL_PROVIDER`/`RESEND_*`/`AUTH_*` env vars are set; no public content is gated by login.
-
-### System dependency
-
-- The base image lacks `python3.12-venv`; it is installed via `apt` during environment setup (persisted in the snapshot, not in the update script).
+- Pipeline: `make test` (pytest), `make lint` (ruff) — run from repo root.
+- Web: `pnpm typecheck`, `pnpm test` (vitest), `pnpm build` — run from repo root.
